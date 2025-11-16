@@ -9,7 +9,7 @@
     { "parameters": { "method": "POST", "url": "https://api.gumroad.com/v2/products", "authentication": "predefinedCredentialType", "nodeCredentialType": "gumroadApi" } },
     { "parameters": { "method": "POST", "url": "https://api.stripe.com/v1/checkout/sessions", "authentication": "predefinedCredentialType", "nodeCredentialType": "stripeApi" } },
     { "parameters": { "method": "POST", "url": "http://localhost:3001/api/webhooks/n8n", "bodyParametersJson": "{ \"workflowId\": 3, \"eventType\": \"notion_complete\", \"status\": \"completed\" }" }
-  ],
+  ]
   "connections": {
     "Webhook": { "main": [[{ "node": "Process Content", "type": "main", "index": 0 }]] },
     "Process Content": { "main": [[{ "node": "Create Notion Page", "type": "main", "index": 0 }]] }
