@@ -1,0 +1,313 @@
+{
+  "name": "01_AMZ_Influencer_Shorts_v2025",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "amazon-influencer-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.trigger }}",
+              "rightValue": "master_orchestrator",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-trigger",
+      "name": "Check Trigger Source",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Amazon Influencer Workflow Processing\nconst webhookData = items[0].json;\n\n// Get tracking IDs from environment or database\nconst trackingIds = [\n  'minimaxagent-20',\n  'ecosystem-20',\n  'automation20-20',\n  'revenue20-20'\n];\n\n// Select best performing tracking ID (simplified logic)\nconst selectedTrackingId = trackingIds[Math.floor(Math.random() * trackingIds.length)];\n\n// Amazon Associates data structure\nconst amazonData = {\n  trackingId: selectedTrackingId,\n  timestamp: new Date().toISOString(),\n  campaign: 'influencer_shorts_2025',\n  products: [\n    {\n      asin: 'B08N5WRWNW',\n      title: 'Echo Dot (4th Gen)',\n      category: 'Electronics',\n      price: 49.99,\n      commission: 7.50\n    },\n    {\n      asin: 'B07XJ8C8F7',\n      title: 'Fire TV Stick 4K',\n      category: 'Electronics', \n      price: 39.99,\n      commission: 6.00\n    },\n    {\n      asin: 'B0842K3SPQ',\n      title: 'Ring Video Doorbell',\n      category: 'Home & Garden',\n      price: 199.99,\n      commission: 30.00\n    }\n  ]\n};\n\nreturn [{\n  json: {\n    ...amazonData,\n    status: 'initialized',\n    workflowId: 1\n  }\n}];"
+      },
+      "id": "initialize-workflow",
+      "name": "Initialize Amazon Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [640, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"model\": \"gpt-4\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert Amazon influencer creating engaging product descriptions for short-form video content. Focus on benefits, social proof, and urgency.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Create a 60-second video script for {{ $json.products[0].title }} - Price: ${{ $json.products[0].price }}. Include hook, benefits, social proof, and call-to-action with tracking link.\"\n    }\n  ],\n  \"max_tokens\": 500,\n  \"temperature\": 0.7\n}"
+      },
+      "id": "generate-scripts",
+      "name": "Generate Video Scripts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [840, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"Professional product photography for {{ $json.products[0].title }}, clean white background, studio lighting, high resolution, Amazon listing style\",\n  \"size\": \"1024x1024\",\n  \"quality\": \"hd\",\n  \"n\": 3\n}"
+      },
+      "id": "generate-images",
+      "name": "Generate Product Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1040, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v17.0/[[INSTAGRAM_ACCOUNT_ID]]/media",
+        "authentication": "predefinedCredentialType", 
+        "nodeCredentialType": "instagramApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"image_url\": \"{{ $json.data[0].url }}\",\n  \"caption\": \"🔥 {{ $json.products[0].title }} - Just ${{ $json.products[0].price }}! \n\n⭐ {{ $json.script.content }}\n\nShop with my link: https://amazon.com/dp/{{ $json.products[0].asin }}?tag={{ $json.trackingId }}\n\n#AmazonFinds #Tech #Gadgets #Influencer\",\n  \"access_token\": \"{{ $env.INSTAGRAM_ACCESS_TOKEN }}\"\n}"
+      },
+      "id": "post-instagram",
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1240, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST", 
+        "url": "https://api.tiktok.com/v2/post/publish/",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "tiktokApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"video_url\": \"{{ $json.video_url }}\",\n  \"title\": \"{{ $json.products[0].title }} - Must Have Tech! 💥\",\n  \"description\": \"{{ $json.script.content }}\",\n  \"privacy_level\": \"SELF_ONLY\",\n  \"disable_duet\": false,\n  \"disable_comment\": false\n}"
+      },
+      "id": "post-tiktok",
+      "name": "Post to TikTok",
+      "type": "n8n-nodes-base.httpRequest", 
+      "typeVersion": 1,
+      "position": [1440, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.youtube.com/v3/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleYouTubeApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"part\": \"snippet,status\",\n  \"requestBody\": {\n    \"snippet\": {\n      \"title\": \"{{ $json.products[0].title }} - Game Changer! 🔥\",\n      \"description\": \"{{ $json.script.content }}\\n\\n🛒 Shop: https://amazon.com/dp/{{ $json.products[0].asin }}?tag={{ $json.trackingId }}\\n\\n#TechReview #AmazonFinds #{{ $json.products[0].category.replace(' ', '') }}\",\n      \"tags\": [\"tech review\", \"amazon finds\", \"{{ $json.products[0].category.toLowerCase() }}\", \"affiliate\"],\n      \"categoryId\": \"28\"\n    },\n    \"status\": {\n      \"privacyStatus\": \"public\",\n      \"selfDeclaredMadeForKids\": false\n    }\n  }\"\n}"
+      },
+      "id": "upload-youtube",
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1640, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Track affiliate metrics and prepare for database update\nconst originalData = items[0].json;\nconst executionTime = Date.now() - new Date(originalData.timestamp).getTime();\n\nconst metrics = {\n  workflowId: 1,\n  trackingId: originalData.trackingId,\n  region: 'US',\n  clicks: Math.floor(Math.random() * 50) + 10, // Simulated for demo\n  impressions: Math.floor(Math.random() * 500) + 100,\n  conversions: Math.floor(Math.random() * 5) + 1,\n  revenue: originalData.products.reduce((sum, product) => sum + product.commission, 0) * 0.1, // 10% conversion\n  commission: originalData.products.reduce((sum, product) => sum + product.commission, 0) * 0.1,\n  executionTime: executionTime,\n  platforms: ['Instagram', 'TikTok', 'YouTube'],\n  productsProcessed: originalData.products.length,\n  contentGenerated: true\n};\n\nreturn [{\n  json: {\n    ...metrics,\n    status: 'completed',\n    completedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "track-metrics",
+      "name": "Track Metrics",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1840, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/api/webhooks/n8n",
+        "options": {},
+        "bodyParametersJson": "{\n  \"workflowId\": 1,\n  \"eventType\": \"amazon_influencer_complete\",\n  \"payload\": {{ $json }},\n  \"status\": \"completed\",\n  \"executionTime\": {{ $json.executionTime }}\n}"
+      },
+      "id": "notify-dashboard",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2040, 200]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Trigger Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Trigger Source": {
+      "main": [
+        [
+          {
+            "node": "Initialize Amazon Data",
+            "type": "main", 
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Amazon Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Scripts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Product Images", 
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Scripts": {
+      "main": [
+        [
+          {
+            "node": "Post to Instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post to TikTok",
+            "type": "main", 
+            "index": 0
+          },
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Product Images": {
+      "main": [
+        [
+          {
+            "node": "Post to Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Instagram": {
+      "main": [
+        [
+          {
+            "node": "Track Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to TikTok": {
+      "main": [
+        [
+          {
+            "node": "Track Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Track Metrics", 
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Metrics": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "config": {
+      "workflowName": "Amazon Influencer Shorts",
+      "version": "2.0",
+      "enabled": true,
+      "estimatedRevenue": 5000,
+      "amazonData": {
+        "regions": ["US", "UK", "DE", "FR", "CA"],
+        "categories": ["Electronics", "Home & Garden", "Sports", "Books", "Beauty"],
+        "commissionRates": {
+          "Electronics": 0.025,
+          "Home & Garden": 0.08,
+          "Sports": 0.05,
+          "Books": 0.05,
+          "Beauty": 0.07
+        }
+      },
+      "socialPlatforms": {
+        "instagram": {
+          "maxPostsPerDay": 3,
+          "hashtags": ["#AmazonFinds", "#Tech", "#Gadgets", "#Influencer"],
+          "postTypes": ["reel", "post", "story"]
+        },
+        "tiktok": {
+          "maxVideosPerDay": 2,
+          "hashtags": ["#TechTok", "#AmazonFinds", "#Gadgets", "#Review"],
+          "videoLength": 60
+        },
+        "youtube": {
+          "maxVideosPerDay": 1,
+          "categories": ["Education", "Howto", "Science", "Technology"],
+          "videoLength": 300
+        }
+      }
+    }
+  },
+  "meta": {
+    "instanceId": "ecosystem-automation-v2025",
+    "amazonTrackingIds": [
+      "minimaxagent-20",
+      "ecosystem-20", 
+      "automation20-20",
+      "revenue20-20"
+    ]
+  }
+}

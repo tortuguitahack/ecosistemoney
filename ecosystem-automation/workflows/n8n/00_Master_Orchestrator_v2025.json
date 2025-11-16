@@ -1,0 +1,268 @@
+{
+  "name": "00_Master_Orchestrator_v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "1c5f5c7e-3e8e-4d5a-9b8c-7f2e4d6a8c9b",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "read",
+        "filePath": "/workflows/config/orchestrator-config.json"
+      },
+      "id": "2d6e6d8f-4f9f-5e6b-0c9d-8g3f5e7b9d0c",
+      "name": "Load Config",
+      "type": "n8n-nodes-base.readFile",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Master Orchestrator Logic\nconst config = items[0].json.config;\nconst workflows = config.workflows;\nconst results = [];\n\n// Process each workflow in parallel\nfor (const workflow of workflows) {\n  if (workflow.enabled && workflow.schedule !== 'manual') {\n    results.push({\n      workflowId: workflow.id,\n      name: workflow.name,\n      status: 'scheduled',\n      executionTime: new Date().toISOString(),\n      nextSteps: workflow.nextSteps || []\n    });\n  }\n}\n\n// Add webhook URLs for each workflow\nconst webhookUrls = workflows.map(workflow => ({\n  workflowId: workflow.id,\n  name: workflow.name,\n  webhookUrl: `${process.env.N8N_WEBHOOK_BASE_URL}/workflow/${workflow.id}`\n}));\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    totalWorkflows: workflows.length,\n    enabledWorkflows: results.length,\n    scheduledExecutions: results,\n    webhookUrls: webhookUrls,\n    status: 'orchestration_complete'\n  }\n}];"
+      },
+      "id": "3e7f7e9g-5g0g-6f7c-1d0e-9h4g6f8c0e1d",
+      "name": "Process Workflows",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.webhookUrls.find(w => w.workflowId === 1)?.webhookUrl }}",
+        "options": {},
+        "bodyParametersJson": "{\n  \"trigger\": \"master_orchestrator\",\n  \"timestamp\": \"{{ $json.timestamp }}\",\n  \"priority\": \"high\"\n}"
+      },
+      "id": "4f8g8f9h-6h1h-7g8d-2e1f-0i5h7g9d1f2e",
+      "name": "Trigger Amazon Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.webhookUrls.find(w => w.workflowId === 2)?.webhookUrl }}",
+        "options": {},
+        "bodyParametersJson": "{\n  \"trigger\": \"master_orchestrator\",\n  \"timestamp\": \"{{ $json.timestamp }}\",\n  \"priority\": \"medium\"\n}"
+      },
+      "id": "5g9h9g0i-7i2i-8h9e-3f2g-1j6i8h0e2g3f",
+      "name": "Trigger Stock AI Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.webhookUrls.find(w => w.workflowId === 3)?.webhookUrl }}",
+        "options": {},
+        "bodyParametersJson": "{\n  \"trigger\": \"master_orchestrator\",\n  \"timestamp\": \"{{ $json.timestamp }}\",\n  \"priority\": \"medium\"\n}"
+      },
+      "id": "6h0i0h1j-8j3j-9i0f-4g3h-2k7j9i1f3h4g",
+      "name": "Trigger Notion Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.webhookUrls.find(w => w.workflowId === 8)?.webhookUrl }}",
+        "options": {},
+        "bodyParametersJson": "{\n  \"trigger\": \"master_orchestrator\",\n  \"timestamp\": \"{{ $json.timestamp }}\",\n  \"priority\": \"low\"\n}"
+      },
+      "id": "7i1j1i2k-9k4k-0j1g-5h4i-3l8k0j2g4i5h",
+      "name": "Trigger DeFi Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 500]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "filePath": "/logs/orchestrator-{{ $json.timestamp.split('T')[0] }}.json",
+        "fileContent": "={{ JSON.stringify($json.scheduledExecutions, null, 2) }}"
+      },
+      "id": "8j2k2j3l-0l5l-1k2h-6i5j-4m9l1k3h5j6i",
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/api/webhooks/n8n",
+        "options": {},
+        "bodyParametersJson": "{\n  \"workflowId\": 0,\n  \"eventType\": \"orchestration_complete\",\n  \"payload\": {{ $json }},\n  \"status\": \"completed\",\n  \"executionTime\": 5000\n}"
+      },
+      "id": "9k3l3k4m-1m6m-2l3i-7j6k-5n0m2l4i6k7j",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Process Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Workflows": {
+      "main": [
+        [
+          {
+            "node": "Trigger Amazon Workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Trigger Stock AI Workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Trigger Notion Workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Trigger DeFi Workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Execution",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "config": {
+      "version": "2.0",
+      "lastUpdated": "2025-11-16T14:39:27Z",
+      "workflows": [
+        {
+          "id": 1,
+          "name": "Amazon Influencer Shorts",
+          "enabled": true,
+          "schedule": "every_6_hours",
+          "priority": "high",
+          "estimatedRevenue": 5000,
+          "nextSteps": ["content_creation", "affiliate_optimization"]
+        },
+        {
+          "id": 2,
+          "name": "Stock AI Photos",
+          "enabled": true,
+          "schedule": "every_4_hours",
+          "priority": "medium",
+          "estimatedRevenue": 2000,
+          "nextSteps": ["ai_generation", "platform_upload"]
+        },
+        {
+          "id": 3,
+          "name": "Notion + Gumroad + Stripe",
+          "enabled": true,
+          "schedule": "every_8_hours",
+          "priority": "medium",
+          "estimatedRevenue": 3000,
+          "nextSteps": ["content_curation", "product_creation", "payment_processing"]
+        },
+        {
+          "id": 4,
+          "name": "Redbubble Bulk Upload",
+          "enabled": true,
+          "schedule": "every_12_hours",
+          "priority": "low",
+          "estimatedRevenue": 1500,
+          "nextSteps": ["design_creation", "bulk_upload", "seo_optimization"]
+        },
+        {
+          "id": 5,
+          "name": "NFT Lazy Mint",
+          "enabled": true,
+          "schedule": "daily",
+          "priority": "medium",
+          "estimatedRevenue": 1200,
+          "nextSteps": ["nft_creation", "marketplace_listing", "promotion"]
+        },
+        {
+          "id": 6,
+          "name": "Audio Loops Bandcamp",
+          "enabled": true,
+          "schedule": "every_6_hours",
+          "priority": "medium",
+          "estimatedRevenue": 1800,
+          "nextSteps": ["audio_generation", " mastering", "platform_upload"]
+        },
+        {
+          "id": 7,
+          "name": "Newsletter Substack",
+          "enabled": true,
+          "schedule": "daily",
+          "priority": "high",
+          "estimatedRevenue": 2500,
+          "nextSteps": ["content_writing", "audience_engagement", "monetization"]
+        },
+        {
+          "id": 8,
+          "name": "DeFi Yield Farming",
+          "enabled": true,
+          "schedule": "every_hour",
+          "priority": "high",
+          "estimatedRevenue": 4000,
+          "nextSteps": ["defi_analysis", "yield_optimization", "risk_management"]
+        }
+      ]
+    }
+  },
+  "meta": {
+    "instanceId": "ecosystem-automation-v2025"
+  }
+}

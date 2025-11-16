@@ -1,0 +1,85 @@
+{
+  "name": "02_STOCK_AI_Photos_v2025",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook-trigger-stock",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "stock-ai-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Stock AI Photo Generation Workflow\nconst prompts = [\n  'Professional business team meeting, modern office, natural lighting',\n  'Beautiful sunset over mountains, landscape photography, vibrant colors',\n  'Fresh vegetables and fruits, food photography, clean background',\n  'Happy family playing in park, lifestyle photography, candid moment',\n  'Modern architecture building, minimalist design, geometric patterns'\n];\n\nconst selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];\n\nreturn [{\n  json: {\n    workflowId: 2,\n    prompt: selectedPrompt,\n    timestamp: new Date().toISOString(),\n    status: 'initialized',\n    targetPlatforms: ['Unsplash', 'Shutterstock', 'Getty Images', 'Adobe Stock']\n  }\n}];"
+      },
+      "id": "initialize-stock",
+      "name": "Initialize Stock Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "options": {},
+        "bodyParametersJson": "{\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"{{ $json.prompt }}, professional photography, high resolution, commercial quality, no text\",\n  \"size\": \"1024x1024\",\n  \"quality\": \"hd\",\n  \"n\": 5\n}"
+      },
+      "id": "generate-stock-photos",
+      "name": "Generate Stock Photos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process and optimize images for stock platforms\nconst images = items[0].json.data;\nconst metadata = items[0].json;\n\nconst processedImages = images.map((image, index) => ({\n  url: image.url,\n  id: `stock_${Date.now()}_${index}`,\n  title: metadata.prompt.substring(0, 100),\n  description: metadata.prompt,\n  tags: metadata.prompt.split(' ').slice(0, 10),\n  category: 'AI Generated',\n  price: Math.floor(Math.random() * 50) + 25, // $25-75\n  royalty: 0.35, // 35% royalty\n  uploaded: false\n}));\n\nreturn [{\n  json: {\n    ...metadata,\n    images: processedImages,\n    totalRevenue: processedImages.reduce((sum, img) => sum + img.price, 0),\n    estimatedMonthlyRevenue: processedImages.reduce((sum, img) => sum + (img.price * 0.3), 0)\n  }\n}];"
+      },
+      "id": "process-images",
+      "name": "Process Images",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/api/webhooks/n8n",
+        "options": {},
+        "bodyParametersJson": "{\n  \"workflowId\": 2,\n  \"eventType\": \"stock_ai_complete\",\n  \"payload\": {{ $json }},\n  \"status\": \"completed\",\n  \"executionTime\": 8000\n}"
+      },
+      "id": "notify-dashboard",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1040, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Initialize Stock Data", "type": "main", "index": 0 }]]
+    },
+    "Initialize Stock Data": {
+      "main": [[{ "node": "Generate Stock Photos", "type": "main", "index": 0 }]]
+    },
+    "Generate Stock Photos": {
+      "main": [[{ "node": "Process Images", "type": "main", "index": 0 }]]
+    },
+    "Process Images": {
+      "main": [[{ "node": "Notify Dashboard", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": {
+    "config": {
+      "workflowName": "Stock AI Photos",
+      "estimatedRevenue": 2000,
+      "dailyImageGeneration": 20,
+      "targetPlatforms": ["Unsplash", "Shutterstock", "Getty Images", "Adobe Stock"]
+    }
+  }
+}
