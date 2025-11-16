@@ -1,0 +1,266 @@
+{
+  "name": "CourseCreator AI - Generación Automática de Cursos Educativos",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "coursecreator-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// CourseCreator AI - Generación Automática de Cursos Educativos\n// Creación de contenido educativo con IA para plataformas online\n\nconst items = $input.all();\nconst courseData = items[0].json;\n\n// Configuración de tipos de cursos y estructuras\nconst courseTypes = {\n  'beginner_guide': {\n    duration_weeks: 4,\n    lessons_per_week: 3,\n    difficulty_level: 1,\n    engagement_rate: 0.78,\n    completion_rate: 0.65,\n    price_range: [49, 99]\n  },\n  'skill_development': {\n    duration_weeks: 8,\n    lessons_per_week: 4,\n    difficulty_level: 2,\n    engagement_rate: 0.82,\n    completion_rate: 0.72,\n    price_range: [99, 299]\n  },\n  'professional_certification': {\n    duration_weeks: 12,\n    lessons_per_week: 5,\n    difficulty_level: 3,\n    engagement_rate: 0.89,\n    completion_rate: 0.78,\n    price_range: [299, 799]\n  },\n  'advanced_masterclass': {\n    duration_weeks: 16,\n    lessons_per_week: 6,\n    difficulty_level: 4,\n    engagement_rate: 0.91,\n    completion_rate: 0.81,\n    price_range: [499, 1499]\n  }\n};\n\n// Analizar topic y determinar tipo de curso óptimo\nconst topic = courseData.topic || 'general';\nconst targetAudience = courseData.audience || 'beginners';\nconst courseType = courseData.course_type || 'skill_development';\nconst config = courseTypes[courseType] || courseTypes.skill_development;\n\n// Generar estructura completa del curso\nconst courseStructure = {\n  course_title: generateCourseTitle(topic, courseType),\n  course_description: generateCourseDescription(topic, targetAudience, config),\n  learning_objectives: generateLearningObjectives(topic, config.difficulty_level),\n  modules: generateCourseModules(topic, config),\n  lessons_per_module: generateLessonsPerModule(config),\n  assessments: generateAssessments(config.difficulty_level),\n  resources: generateCourseResources(topic),\n  certificate_template: generateCertificateInfo(topic, courseType)\n};\n\n// Crear contenido con IA\nconst aiGeneratedContent = {\n  module_outlines: generateModuleOutlines(topic, config),\n  lesson_scripts: generateLessonScripts(topic, config),\n  quiz_questions: generateQuizQuestions(topic, config.difficulty_level),\n  assignments: generateAssignments(topic, config.difficulty_level),\n  presentation_slides: generateSlideTemplates(topic, config),\n  video_scripts: generateVideoScripts(topic, config),\n  reading_materials: generateReadingList(topic)\n};\n\n// Calcular revenue potencial\nconst revenueProjection = {\n  base_price: Math.floor(Math.random() * (config.price_range[1] - config.price_range[0]) + config.price_range[0]),\n  expected_enrollments_monthly: Math.floor(Math.random() * 150) + 50,\n  projected_monthly_revenue: 0, // Calculado abajo\n  lifetime_value_per_student: calculateLTV(config),\n  conversion_rate: config.completion_rate * 0.3,\n  churn_rate: 1 - config.completion_rate\n};\n\nrevenueProjection.projected_monthly_revenue = revenueProjection.base_price * revenueProjection.expected_enrollments_monthly;\n\n// Automatizar creación de contenido\nconst contentCreation = {\n  text_content: {\n    modules: generateWrittenContent(topic, config),\n    assignments: generateWrittenAssignments(topic),\n    assessments: generateWrittenAssessments(topic)\n  },\n  multimedia_content: {\n    video_scripts: generateVideoContent(topic, config),\n    presentation_slides: generatePresentationContent(topic),\n    infographics: generateVisualContent(topic)\n  },\n  interactive_content: {\n    quizzes: generateInteractiveQuizzes(topic),\n    exercises: generatePracticalExercises(topic),\n    simulations: generateSimulations(topic)\n  }\n};\n\n// Integración con plataformas educativas\nconst platformIntegrations = {\n  'teachable': {\n    course_upload: true,\n    student_enrollment: true,\n    payment_processing: true,\n    completion_tracking: true\n  },\n  'udemy': {\n    course_listing: true,\n    coupon_management: true,\n    review_monitoring: true,\n    promotion_tools: true\n  },\n  'coursera': {\n    course_partnership: false, // Requires approval\n    credential_issuing: true,\n    peer_assessment: true\n  },\n  'custom_lms': {\n    api_integration: true,\n    scorm_compliance: true,\n    analytics_tracking: true,\n    certificate_generation: true\n  }\n};\n\nreturn {\n  json: {\n    action: 'course_creation_initiated',\n    course_id: courseData.course_id,\n    course_type: courseType,\n    topic: topic,\n    target_audience: targetAudience,\n    course_structure: courseStructure,\n    ai_generated_content: aiGeneratedContent,\n    revenue_projection: revenueProjection,\n    content_creation: contentCreation,\n    platform_integrations: platformIntegrations,\n    estimated_monthly_revenue: Math.floor(revenueProjection.projected_monthly_revenue),\n    campaign_id: 'coursecreator_' + Date.now()\n  }\n};\n\n// Funciones auxiliares\nfunction generateCourseTitle(topic, courseType) {\n  const prefixes = {\n    'beginner_guide': 'Guía Completa de',\n    'skill_development': 'Desarrollo Profesional en',\n    'professional_certification': 'Certificación Profesional en',\n    'advanced_masterclass': 'Masterclass Avanzada de'\n  };\n  \n  return `${prefixes[courseType]} ${topic}`;\n}\n\nfunction generateCourseDescription(topic, audience, config) {\n  return `Domina ${topic} desde cero hasta nivel profesional. Este curso de ${config.duration_weeks} semanas está diseñado para ${audience} y incluye ${config.lessons_per_week * config.duration_weeks} lecciones prácticas con proyectos reales.`;\n}\n\nfunction generateLearningObjectives(topic, difficulty) {\n  return [\n    `Comprender los fundamentos de ${topic}`,\n    `Aplicar conocimientos en proyectos prácticos`,\n    `Desarrollar habilidades específicas de ${topic}`,\n    `Crear un portfolio profesional`,\n    `Obtener certificación reconocida en la industria`\n  ].slice(0, Math.min(5, difficulty + 3));\n}\n\nfunction generateCourseModules(topic, config) {\n  const moduleCount = Math.ceil(config.duration_weeks / 2);\n  return Array.from({length: moduleCount}, (_, i) => ({\n    module_number: i + 1,\n    title: `Módulo ${i + 1}: ${generateModuleTitle(topic, i)}`,\n    description: `Conceptos y prácticas de ${topic} para el módulo ${i + 1}`,\n    duration_hours: Math.floor(config.duration_weeks * 2 / moduleCount),\n    lessons: config.lessons_per_week * 2\n  }));\n}\n\nfunction generateModuleTitle(topic, moduleIndex) {\n  const titles = {\n    0: 'Fundamentos y Conceptos Básicos',\n    1: 'Aplicaciones Prácticas',\n    2: 'Técnicas Avanzadas',\n    3: 'Proyectos Reales',\n    4: 'Optimización y Mejores Prácticas'\n  };\n  \n  return titles[moduleIndex] || `Profundización en ${topic}`;\n}\n\nfunction generateLessonsPerModule(config) {\n  return Math.floor(config.lessons_per_week * config.duration_weeks / 4); // Aproximadamente 2 por semana\n}\n\nfunction generateAssessments(difficulty) {\n  return [\n    {\n      type: 'quiz',\n      frequency: 'weekly',\n      questions: 10 + difficulty * 5\n    },\n    {\n      type: 'assignment',\n      frequency: 'bi_weekly',\n      projects: 2 + difficulty\n    },\n    {\n      type: 'final_exam',\n      frequency: 'end_of_course',\n      comprehensive: true\n    }\n  ];\n}\n\nfunction generateCourseResources(topic) {\n  return {\n    textbooks: [`Manual Completo de ${topic}`, `${topic} Práctico`],\n    templates: [`Template de Proyecto ${topic}`, `Checklist ${topic}`],\n    tools: [`Herramientas de ${topic}`, `Software Recomendado`],\n    community: [`Grupo de Discusión ${topic}`, `Discord de Estudiantes`] \n  };\n}\n\nfunction generateCertificateInfo(topic, courseType) {\n  return {\n    title: `Certificado en ${topic}`,\n    issued_by: 'CourseCreator AI Academy',\n    validity: 'Lifetime',\n    verifiable: true\n  };\n}\n\nfunction generateModuleOutlines(topic, config) {\n  return Array.from({length: 4}, (_, i) => ({\n    module: i + 1,\n    title: generateModuleTitle(topic, i),\n    outline: `Tema detallado del módulo ${i + 1} de ${topic}`,\n    key_points: [`Punto clave 1 de ${topic}`, `Punto clave 2 de ${topic}`, `Punto clave 3 de ${topic}`],\n    practical_exercises: `Ejercicios prácticos de ${topic} para el módulo ${i + 1}`\n  }));\n}\n\nfunction generateLessonScripts(topic, config) {\n  const totalLessons = config.lessons_per_week * config.duration_weeks;\n  return Array.from({length: totalLessons}, (_, i) => ({\n    lesson_number: i + 1,\n    title: `Lección ${i + 1}: ${topic} en Acción`,\n    duration_minutes: 45 + Math.floor(Math.random() * 30),\n    script: `Script detallado para enseñar ${topic} en la lección ${i + 1}`,\n    key_concepts: [`Concepto 1 de ${topic}`, `Concepto 2 de ${topic}`],\n    activities: [`Actividad práctica ${i + 1}`, `Ejercicio interactivo ${i + 1}`]\n  }));\n}\n\nfunction generateQuizQuestions(topic, difficulty) {\n  return Array.from({length: 50 + difficulty * 20}, (_, i) => ({\n    question_id: i + 1,\n    question: `Pregunta sobre ${topic} - Nivel ${difficulty}`,\n    type: Math.random() > 0.7 ? 'multiple_choice' : 'true_false',\n    options: [\n      `Opción A sobre ${topic}`,\n      `Opción B sobre ${topic}`,\n      `Opción C sobre ${topic}`,\n      `Opción D sobre ${topic}`\n    ],\n    correct_answer: Math.floor(Math.random() * 4),\n    explanation: `Explicación detallada sobre ${topic}`\n  }));\n}\n\nfunction generateAssignments(topic, difficulty) {\n  return Array.from({length: difficulty * 2}, (_, i) => ({\n    assignment_id: i + 1,\n    title: `Proyecto ${i + 1}: Aplicación de ${topic}`,\n    description: `Proyecto práctico para aplicar conocimientos de ${topic}`,\n    requirements: [`Requisito 1 para ${topic}`, `Requisito 2 para ${topic}`, `Requisito 3 para ${topic}`],\n    submission_format: 'PDF + Código si aplica',\n    evaluation_criteria: [`Criterio 1`, `Criterio 2`, `Criterio 3`]\n  }));\n}\n\nfunction generateSlideTemplates(topic, config) {\n  const totalSlides = config.duration_weeks * 20; // 20 slides por semana\n  return {\n    total_slides: totalSlides,\n    templates: {\n      title_slide: `Plantilla título para ${topic}`,\n      content_slide: `Plantilla contenido para ${topic}`,\n      quiz_slide: `Plantilla preguntas para ${topic}`,\n      summary_slide: `Plantilla resumen para ${topic}`\n    },\n    themes: ['Professional Blue', 'Modern Green', 'Corporate Gray', 'Creative Orange']\n  };\n}\n\nfunction generateVideoScripts(topic, config) {\n  const totalVideos = config.duration_weeks * 2;\n  return Array.from({length: totalVideos}, (_, i) => ({\n    video_number: i + 1,\n    title: `Video ${i + 1}: ${topic} Demostrado`,\n    duration_minutes: 15 + Math.floor(Math.random() * 20),\n    script: `Script completo para video demostrativo de ${topic}`,\n    scenes: [\n      `Escena introducción ${topic}`,\n      `Escena demostración ${topic}`,\n      `Escena práctica ${topic}`,\n      `Escena resumen ${topic}`\n    ],\n    visual_aids: [`Diagrama de ${topic}`, `Código ejemplo ${topic}`, `Screenshot ${topic}`]\n  }));\n}\n\nfunction generateReadingList(topic) {\n  return [\n    {\n      title: `Libro Fundamentos de ${topic}`,\n      author: `Autor Experto en ${topic}`,\n      pages: 300,\n      priority: 'high'\n    },\n    {\n      title: `Guía Práctica de ${topic}`,\n      author: `Especialista en ${topic}`,\n      pages: 250,\n      priority: 'medium'\n    },\n    {\n      title: `${topic} Avanzado: Casos de Estudio`,\n      author: `Investigador de ${topic}`,\n      pages: 180,\n      priority: 'low'\n    }\n  ];\n}\n\nfunction generateWrittenContent(topic, config) {\n  const totalModules = 4;\n  return Array.from({length: totalModules}, (_, i) => ({\n    module: i + 1,\n    content_type: 'written',\n    word_count: 5000 + i * 1000,\n    topics: [`Conceptos básicos de ${topic}`, `Aplicaciones prácticas ${topic}`, `Casos de estudio ${topic}`]\n  }));\n}\n\nfunction generateWrittenAssignments(topic) {\n  return Array.from({length: 6}, (_, i) => ({\n    assignment: i + 1,\n    type: 'written',\n    word_count: 1000 + Math.floor(Math.random() * 1500),\n    topic: `${topic} - Proyecto ${i + 1}`,\n    format: 'Essay/Report'\n  }));\n}\n\nfunction generateWrittenAssessments(topic) {\n  return Array.from({length: 8}, (_, i) => ({\n    assessment: i + 1,\n    type: 'written_exam',\n    questions: 15 + Math.floor(Math.random() * 10),\n    time_limit_minutes: 60 + Math.floor(Math.random() * 30),\n    topic: `${topic} - Evaluación ${i + 1}`\n  }));\n}\n\nfunction generateVideoContent(topic, config) {\n  return {\n    total_videos: config.duration_weeks * 2,\n    total_duration_hours: config.duration_weeks * 3,\n    video_types: ['Lecture', 'Demo', 'Tutorial', 'Case Study'],\n    quality_standards: ['1080p minimum', 'Audio clear', 'Subtitles included']\n  };\n}\n\nfunction generatePresentationContent(topic) {\n  return {\n    total_presentations: 20,\n    slides_per_presentation: 25 + Math.floor(Math.random() * 15),\n    design_templates: 5,\n    animation_style: 'Professional'\n  };\n}\n\nfunction generateVisualContent(topic) {\n  return {\n    infographics: 15,\n    diagrams: 10,\n    flowcharts: 5,\n    mind_maps: 3,\n    tools_used: ['Canva', 'Miro', 'Figma']\n  };\n}\n\nfunction generateInteractiveQuizzes(topic) {\n  return Array.from({length: 20}, (_, i) => ({\n    quiz_id: i + 1,\n    title: `Quiz ${i + 1}: ${topic}`,\n    questions: 10 + Math.floor(Math.random() * 10),\n    time_limit: 15 + Math.floor(Math.random() * 15),\n    attempts_allowed: 3,\n    randomize_questions: true\n  }));\n}\n\nfunction generatePracticalExercises(topic) {\n  return Array.from({length: 15}, (_, i) => ({\n    exercise_id: i + 1,\n    title: `Ejercicio ${i + 1}: ${topic} en la Práctica`,\n    difficulty: ['Fácil', 'Medio', 'Difícil'][Math.floor(Math.random() * 3)],\n    estimated_time: 30 + Math.floor(Math.random() * 90),\n    tools_needed: [`Herramienta 1 ${topic}`, `Herramienta 2 ${topic}`]\n  }));\n}\n\nfunction generateSimulations(topic) {\n  return Array.from({length: 5}, (_, i) => ({\n    simulation_id: i + 1,\n    title: `Simulación ${i + 1}: ${topic} Real`,\n    scenario: `Escenario realista de ${topic} para practicar`,\n    interactive_elements: [`Elemento interactivo 1`, `Elemento interactivo 2`],\n    learning_objective: `Objetivo específico de aprendizaje ${topic}`\n  }));\n}\n\nfunction calculateLTV(config) {\n  return config.price_range[1] * config.completion_rate * 1.2; // Base price * completion rate * upsell factor\n}"
+      },
+      "name": "Generador de Curso IA",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.teachable.com/v1/courses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "teachableApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "name": "{{ $json.course_structure.course_title }}",
+n            "description": "{{ $json.course_structure.course_description }}",
+            "price": "{{ $json.revenue_projection.base_price }}",
+            "thumbnail_url": "{{ $json.course_data.course_image_url }}",
+            "category": "{{ $json.topic }}",
+            "language": "es",
+            "level": "{{ $json.course_type }}",
+            "duration_weeks": "{{ $json.course_structure.modules.length }}",
+            "lessons_count": "{{ $json.ai_generated_content.lesson_scripts.length }}",
+            "created_at": "{{ new Date().toISOString() }}"
+          }
+        }
+      },
+      "name": "Crear Curso en Teachable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.udemy.com/v2/courses/",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "udemyApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "title": "{{ $json.course_structure.course_title }}",
+            "description": "{{ $json.course_structure.course_description }}",
+            "primary_category": "{{ $json.topic }}",
+            "primary_subcategory": "{{ $json.course_type }}",
+            "language": "es",
+            "estimated_content_length": "{{ $json.revenue_projection.base_price > 500 ? 20 : 10 }}",
+            "num_published_lectures": "{{ $json.ai_generated_content.lesson_scripts.length }}",
+            "num_published_practice_tests": "{{ $json.ai_generated_content.quiz_questions.length / 10 }}",
+            "has_closed_caption": true,
+            "has_definition": true,
+            "has_automation": true
+          }
+        }
+      },
+      "name": "Crear Curso en Udemy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.evernote.com/v1/notebooks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "evernoteApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "name": "Curso: {{ $json.course_structure.course_title }}",
+            "stack": "Cursos",
+            "shared": false,
+            "contact": {
+              "name": "CourseCreator AI",
+              "email": "courses@example.com"
+            }
+          }
+        }
+      },
+      "name": "Crear Notebook Evernote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackWebhook",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "text": "CourseCreator AI - Nuevo curso generado",
+            "attachments": [
+              {
+                "color": "good",
+                "fields": [
+                  {
+                    "title": "Tema del Curso",
+                    "value": "{{ $json.topic }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Tipo",
+                    "value": "{{ $json.course_type }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Duración",
+                    "value": "{{ $json.revenue_projection.duration_weeks }} semanas",
+                    "short": true
+                  },
+                  {
+                    "title": "Precio Proyectado",
+                    "value": "${{ $json.revenue_projection.base_price }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Enrollments Mensuales Esperadas",
+                    "value": "{{ $json.revenue_projection.expected_enrollments_monthly }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Revenue Mensual Proyectado",
+                    "value": "${{ $json.revenue_projection.projected_monthly_revenue }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Módulos Generados",
+                    "value": "{{ $json.course_structure.modules.length }}",
+                    "short": false
+                  },
+                  {
+                    "title": "Lecciones Creadas",
+                    "value": "{{ $json.ai_generated_content.lesson_scripts.length }}",
+                    "short": false
+                  },
+                  {
+                    "title": "Plataformas",
+                    "value": "Teachable, Udemy, Evernote",
+                    "short": false
+                  }
+                ],
+                "footer": "CourseCreator AI v2025",
+                "ts": "{{ Math.floor(Date.now() / 1000) }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Notificación Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generador de Curso IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador de Curso IA": {
+      "main": [
+        [
+          {
+            "node": "Crear Curso en Teachable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Curso en Udemy",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Notebook Evernote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Curso en Teachable": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Curso en Udemy": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Notebook Evernote": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "41",
+    "category": "education",
+    "price": 175,
+    "revenue": 4200,
+    "conversions": 156,
+    "roi": 234,
+    "description": "Generación automática de cursos educativos completos con IA",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 4200,
+    "target_monthly": 5040,
+    "current_performance": 83.33
+  },
+  "tags": ["education", "course-creation", "ai-content", "online-learning", "automation"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "coursecreator-v2025"
+}

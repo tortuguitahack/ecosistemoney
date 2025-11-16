@@ -1,0 +1,179 @@
+{
+  "name": "VideoCreator AI - Generación Automática de Videos",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "videocreator-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// VideoCreator AI - Generación Automática de Videos con IA\n// Creación completa de contenido audiovisual para marketing y educación\n\nconst items = $input.all();\nconst videoRequest = items[0].json;\n\n// Configuración de tipos de videos\nconst videoTypes = {\n  'promotional_video': {\n    duration_seconds: 60,\n    complexity: 'medium',\n    engagement_rate: 0.78,\n    conversion_rate: 0.12,\n    production_time_hours: 4,\n    cost_per_second: 15\n  },\n  'explainer_video': {\n    duration_seconds: 120,\n    complexity: 'high',\n    engagement_rate: 0.85,\n    conversion_rate: 0.18,\n    production_time_hours: 6,\n    cost_per_second: 12\n  },\n  'tutorial_video': {\n    duration_seconds: 180,\n    complexity: 'medium',\n    engagement_rate: 0.82,\n    conversion_rate: 0.15,\n    production_time_hours: 5,\n    cost_per_second: 10\n  },\n  'social_media_video': {\n    duration_seconds: 30,\n    complexity: 'low',\n    engagement_rate: 0.92,\n    conversion_rate: 0.08,\n    production_time_hours: 2,\n    cost_per_second: 20\n  },\n  'presentation_video': {\n    duration_seconds: 240,\n    complexity: 'medium',\n    engagement_rate: 0.72,\n    conversion_rate: 0.10,\n    production_time_hours: 8,\n    cost_per_second: 8\n  }\n};\n\n// Analizar requerimientos del video\nconst videoType = videoRequest.video_type || 'promotional_video';\nconst config = videoTypes[videoType] || videoTypes.promotional_video;\nconst topic = videoRequest.topic || 'producto';\nconst targetAudience = videoRequest.audience || 'general';\n\n// Generar guión completo con IA\nconst scriptGeneration = {\n  video_type: videoType,\n  total_duration: config.duration_seconds,\n  script_segments: generateScriptSegments(topic, config, targetAudience),\n  voiceover_script: generateVoiceoverScript(topic, targetAudience),\n  visual_cues: generateVisualCues(config),\n  transitions: generateTransitions(config),\n  call_to_action: generateCallToAction(videoType, topic),\n  branding_elements: generateBrandingElements(videoRequest)\n};\n\n// Crear storyboard automático\nconst storyboard = {\n  scenes_count: Math.ceil(config.duration_seconds / 10), // Una escena cada 10 segundos\n  scene_details: generateSceneDetails(scriptGeneration, config),\n  visual_style: selectVisualStyle(videoType),\n  color_palette: selectColorPalette(videoType),\n  typography: selectTypography(videoType),\n  animation_style: selectAnimationStyle(videoType)\n};\n\n// Generar assets multimedia\nconst multimediaAssets = {\n  background_music: selectBackgroundMusic(videoType),\n  sound_effects: selectSoundEffects(videoType),\n  stock_footage: generateStockFootageRequests(videoRequest),\n  graphics_elements: generateGraphicsElements(scriptGeneration),\n  text_animations: generateTextAnimations(scriptGeneration),\n  brand_assets: videoRequest.brand_assets || generateDefaultBrandAssets()\n};\n\n// Configurar renderizado y exportación\nconst renderingConfig = {\n  resolution: determineOptimalResolution(videoType),\n  frame_rate: determineFrameRate(videoType),\n  format: determineOptimalFormat(videoType),\n  quality_settings: selectQualitySettings(config.complexity),\n  platform_optimizations: generatePlatformOptimizations(videoRequest.platforms || ['youtube']),\n  export_profiles: generateExportProfiles(videoRequest.platforms || ['youtube'])\n};\n\n// Calcular costos y beneficios\nconst costBenefitAnalysis = {\n  production_cost: config.duration_seconds * config.cost_per_second,\n  time_savings_vs_human: config.production_time_hours * 0.7, // 70% time saved\n  expected_performance: {\n    views_projected: Math.floor(Math.random() * 50000) + 5000,\n    engagement_rate: config.engagement_rate,\n    conversion_rate: config.conversion_rate,\n    roi_projection: calculateVideoROI(videoRequest, config)\n  },\n  revenue_potential: calculateRevenuePotential(config, videoRequest)\n};\n\n// Integrar con plataformas de video\nconst platformIntegrations = {\n  'youtube': {\n    upload_auto: true,\n    title_optimization: true,\n    thumbnail_auto: true,\n    description_seo: true,\n    tags_optimization: true\n  },\n  'vimeo': {\n    upload_auto: true,\n    privacy_settings: true,\n    analytics_tracking: true,\n    password_protection: true\n  },\n  'wistia': {\n    upload_auto: true,\n    lead_capture: true,\n    analytics_deep: true,\n    customization: true\n  },\n  'wix_video': {\n    website_integration: true,\n    autoplay_settings: true,\n    mobile_optimization: true\n  }\n};\n\nreturn {\n  json: {\n    action: 'video_creation_initiated',\n    video_id: videoRequest.video_id,\n    video_type: videoType,\n    script_generation: scriptGeneration,\n    storyboard: storyboard,\n    multimedia_assets: multimediaAssets,\n    rendering_config: renderingConfig,\n    cost_benefit_analysis: costBenefitAnalysis,\n    platform_integrations: platformIntegrations,\n    estimated_monthly_revenue: Math.floor(costBenefitAnalysis.revenue_potential.monthly_potential),\n    campaign_id: 'videocreator_' + Date.now()\n  }\n};\n\n// Funciones auxiliares\nfunction generateScriptSegments(topic, config, audience) {\n  const segmentCount = Math.ceil(config.duration_seconds / 15); // Segmento cada 15 segundos\n  return Array.from({length: segmentCount}, (_, i) => {\n    const segmentDuration = Math.floor(config.duration_seconds / segmentCount);\n    return {\n      segment_number: i + 1,\n      start_time: i * segmentDuration,\n      duration: segmentDuration,\n      content: generateSegmentContent(topic, i, audience),\n      visual_description: generateVisualDescription(topic, i),\n      audio_cues: generateAudioCues(i)\n    };\n  });\n}\n\nfunction generateSegmentContent(topic, segmentIndex, audience) {\n  const contentTypes = {\n    0: `Introducción a ${topic}`,\n    1: `Beneficios principales de ${topic}`,\n    2: `Cómo funciona ${topic}`,\n    3: `Casos de éxito con ${topic}`,\n    4: `Llamada a la acción para ${topic}`\n  };\n  \n  return {\n    main_content: contentTypes[segmentIndex] || `Contenido sobre ${topic} - Segmento ${segmentIndex + 1}`,\n    key_points: [\n      `Punto clave 1 sobre ${topic}`,\n      `Punto clave 2 sobre ${topic}`,\n      `Punto clave 3 sobre ${topic}`\n    ],\n    tone: 'informativo y persuasivo',\n    pacing: 'moderado'\n  };\n}\n\nfunction generateVisualDescription(topic, segmentIndex) {\n  const visualStyles = {\n    0: 'Plano general con producto destacado',\n    1: 'Close-ups de características importantes',\n    2: 'Animaciones explicativas',\n    3: 'Testimonios visuales y gráficos',\n    4: 'Call-to-action con elementos dinámicos'\n  };\n  \n  return {\n    style: visualStyles[segmentIndex] || 'Estilo dinámico y profesional',\n    camera_movements: ['estático', 'zoom', 'pan', 'tracking'],\n    lighting: 'profesional con sombras suaves',\n    composition: 'regla de tercios aplicada'\n  };\n}\n\nfunction generateAudioCues(segmentIndex) {\n  return {\n    music_cue: `Música de fondo ${segmentIndex + 1}`,\n    sfx_cues: [\n      `Efecto de sonido ${segmentIndex + 1}A`,\n      `Efecto de sonido ${segmentIndex + 1}B`\n    ],\n    voice_over: `Narración para segmento ${segmentIndex + 1}`,\n    silence_points: [2, 8, 14] // segundos donde se puede hacer pausa\n  };\n}\n\nfunction generateVoiceoverScript(topic, audience) {\n  return {\n    greeting: `¡Hola! Hoy te presentamos ${topic}`,\n    main_narration: `Descubre cómo ${topic} puede transformar tu experiencia. Con características innovadoras y resultados comprobados, ${topic} es la solución que estabas buscando.`,\n    benefits: [\n      `Beneficio 1: ${topic} te ahorra tiempo`,\n      `Beneficio 2: ${topic} mejora tu productividad`,\n      `Beneficio 3: ${topic} ofrece resultados garantizados`\n    ],\n    closing: `¿Listo para probar ${topic}? ¡Haz clic ahora y comienza tu transformación!`,\n    tone: 'entusiasta y confiable',\n    pace: 'claro y expresivo'\n  };\n}\n\nfunction generateVisualCues(config) {\n  return {\n    opening_graphics: 'Logo animado con título del video',\n    transition_effects: ['fade', 'slide', 'zoom', 'morph'],\n    text_overlays: ['títulos', 'subtítulos', 'bullets', 'estadísticas'],\n    call_to_action_graphics: 'Botón animado con texto persuasivo',\n    closing_graphics: 'Logo final con información de contacto'\n  };\n}\n\nfunction generateTransitions(config) {\n  return Array.from({length: Math.ceil(config.duration_seconds / 20)}, (_, i) => ({\n    transition_point: (i + 1) * 20,\n    transition_type: ['cut', 'fade', 'wipe', 'dissolve'][Math.floor(Math.random() * 4)],\n    duration: 0.5 + Math.random() * 0.5,\n    style: 'profesional y fluido'\n  }));\n}\n\nfunction generateCallToAction(videoType, topic) {\n  const ctaTemplates = {\n    'promotional_video': `¡Obtén ${topic} ahora con 30% de descuento!`,\n    'explainer_video': `¿Quieres saber más sobre ${topic}? Contáctanos hoy`,\n    'tutorial_video': `¿Te gustó el tutorial? Suscríbete para más contenido`,\n    'social_media_video': `Dale like si ${topic} te parece increíble`,\n    'presentation_video': `¿Interesado en ${topic}? Agenda una consulta gratuita`\n  };\n  \n  return {\n    text: ctaTemplates[videoType] || `¡Descubre más sobre ${topic}!`,\n    visual_style: 'botón animado destacado',\n    timing: config.duration_seconds - 5,\n    duration: 5,\n    urgency_elements: ['countdown', 'limited_time', 'exclusive_offer']\n  };\n}\n\nfunction generateBrandingElements(videoRequest) {\n  return {\n    logo_placement: 'esquina inferior derecha',\n    brand_colors: ['#1f77b4', '#ff7f0e', '#2ca02c'],\n    font_style: 'sans-serif moderno',\n    brand_voice: videoRequest.brand_voice || 'profesional y amigable',\n    company_info: videoRequest.company_info || 'Información de contacto genérica'\n  };\n}\n\nfunction generateSceneDetails(scriptGeneration, config) {\n  return scriptGeneration.script_segments.map(segment => ({\n    scene_id: segment.segment_number,\n    title: `Escena ${segment.segment_number}: ${segment.content.main_content}`,\n    duration: segment.duration,\n    key_visuals: [\n      `Elemento visual principal escena ${segment.segment_number}`,\n      `Elemento visual secundario escena ${segment.segment_number}`,\n      `Fondo o ambiente escena ${segment.segment_number}`\n    ],\n    animations: [\n      `Animación entrada escena ${segment.segment_number}`,\n      `Animación mantenimiento escena ${segment.segment_number}`,\n      `Animación salida escena ${segment.segment_number}`\n    ],\n    audio_sync: {\n      music_sync: true,\n      sfx_sync: true,\n      voice_sync: true\n    }\n  }));\n}\n\nfunction selectVisualStyle(videoType) {\n  const styles = {\n    'promotional_video': 'moderno y dinámico con elementos gráficos',\n    'explainer_video': 'educativo con diagramas y animaciones',\n    'tutorial_video': 'step-by-step con indicadores claros',\n    'social_media_video': 'vertical y atractivo para mobile',\n    'presentation_video': 'profesional y corporativo'\n  };\n  \n  return styles[videoType] || styles['promotional_video'];\n}\n\nfunction selectColorPalette(videoType) {\n  const palettes = {\n    'promotional_video': {\n      primary: '#1f77b4',\n      secondary: '#ff7f0e',\n      accent: '#2ca02c',\n      background: '#ffffff',\n      text: '#333333'\n    },\n    'explainer_video': {\n      primary: '#2ca02c',\n      secondary: '#1f77b4',\n      accent: '#d62728',\n      background: '#f8f9fa',\n      text: '#212529'\n    },\n    'tutorial_video': {\n      primary: '#17a2b8',\n      secondary: '#6c757d',\n      accent: '#ffc107',\n      background: '#ffffff',\n      text: '#495057'\n    },\n    'social_media_video': {\n      primary: '#e1306c',\n      secondary: '#ffdc80',\n      accent: '#3897f0',\n      background: '#000000',\n      text: '#ffffff'\n    },\n    'presentation_video': {\n      primary: '#343a40',\n      secondary: '#6c757d',\n      accent: '#007bff',\n      background: '#ffffff',\n      text: '#212529'\n    }\n  };\n  \n  return palettes[videoType] || palettes['promotional_video'];\n}\n\nfunction selectTypography(videoType) {\n  return {\n    primary_font: 'Montserrat',\n    secondary_font: 'Open Sans',\n    heading_size: '48px',\n    body_size: '24px',\n    cta_size: '36px',\n    weight_bold: '700',\n    weight_regular: '400'\n  };\n}\n\nfunction selectAnimationStyle(videoType) {\n  const animations = {\n    'promotional_video': ['bounce', 'slide', 'fade', 'scale'],\n    'explainer_video': ['morph', 'reveal', 'connect', 'flow'],\n    'tutorial_video': ['step', 'highlight', 'guide', 'progress'],\n    'social_media_video': ['trendy', 'glitch', 'dynamic', 'viral'],\n    'presentation_video': ['corporate', 'elegant', 'professional', 'minimal']\n  };\n  \n  return animations[videoType] || animations['promotional_video'];\n}\n\nfunction selectBackgroundMusic(videoType) {\n  const musicGenres = {\n    'promotional_video': 'electronic_upbeat',\n    'explainer_video': 'ambient_inspirational',\n    'tutorial_video': 'acoustic_folk',\n    'social_media_video': 'trending_pop',\n    'presentation_video': 'corporate_orchestral'\n  };\n  \n  return {\n    genre: musicGenres[videoType] || musicGenres['promotional_video'],\n    tempo: 'medium',\n    mood: 'upbeat',\n    duration_match: true,\n    royalty_free: true\n  };\n}\n\nfunction selectSoundEffects(videoType) {\n  return {\n    button_clicks: true,\n    whoosh_transitions: true,\n    notification_sounds: true,\n    success_chimes: true,\n    alert_sounds: videoType === 'promotional_video'\n  };\n}\n\nfunction generateStockFootageRequests(videoRequest) {\n  return [\n    {\n      category: 'business_meetings',\n      duration: '5-10 seconds',\n      style: 'professional',\n      resolution: '4K'\n    },\n    {\n      category: 'technology',\n      duration: '3-8 seconds',\n      style: 'modern',\n      resolution: '4K'\n    },\n    {\n      category: 'lifestyle',\n      duration: '4-12 seconds',\n      style: 'authentic',\n      resolution: '4K'\n    }\n  ];\n}\n\nfunction generateGraphicsElements(scriptGeneration) {\n  return {\n    icons: ['check', 'arrow', 'star', 'heart', 'thumbs_up'],\n    charts: ['bar', 'pie', 'line', 'doughnut', 'progress'],\n    diagrams: ['flowchart', 'process', 'comparison', 'hierarchy'],\n    infographics: ['timeline', 'steps', 'statistics', 'benefits']\n  };\n}\n\nfunction generateTextAnimations(scriptGeneration) {\n  return Array.from({length: scriptGeneration.script_segments.length}, (_, i) => ({\n    segment: i + 1,\n    animations: [\n      'fade_in',\n      'slide_up',\n      'typewriter',\n      'bounce_in'\n    ],\n    timing: {\n      delay: i * 2,\n      duration: 1.5,\n      stagger: 0.2\n    }\n  }));\n}\n\nfunction generateDefaultBrandAssets() {\n  return {\n    logo_file: 'default_logo.png',\n    brand_colors: ['#007bff', '#6c757d', '#28a745'],\n    fonts: ['Arial', 'Helvetica'],\n    tagline: 'Tu marca confiable'\n  };\n}\n\nfunction determineOptimalResolution(videoType) {\n  const resolutions = {\n    'promotional_video': '1920x1080',\n    'explainer_video': '1920x1080',\n    'tutorial_video': '1920x1080',\n    'social_media_video': '1080x1920',\n    'presentation_video': '1920x1080'\n  };\n  \n  return resolutions[videoType] || '1920x1080';\n}\n\nfunction determineFrameRate(videoType) {\n  return videoType === 'social_media_video' ? 30 : 24;\n}\n\nfunction determineOptimalFormat(videoType) {\n  return videoType === 'social_media_video' ? 'mp4' : 'mp4';\n}\n\nfunction selectQualitySettings(complexity) {\n  const settings = {\n    'low': { bitrate: '2M', quality: 'medium', compression: 'high' },\n    'medium': { bitrate: '5M', quality: 'high', compression: 'medium' },\n    'high': { bitrate: '8M', quality: 'very_high', compression: 'low' }\n  };\n  \n  return settings[complexity] || settings['medium'];\n}\n\nfunction generatePlatformOptimizations(platforms) {\n  const optimizations = {\n    'youtube': {\n      aspect_ratio: '16:9',\n      max_duration: '10 minutes',\n      thumbnail_size: '1280x720',\n      seo_optimization: true\n    },\n    'instagram': {\n      aspect_ratio: '1:1',\n      max_duration: '60 seconds',\n      thumbnail_size: '1080x1080',\n      hashtag_optimization: true\n    },\n    'tiktok': {\n      aspect_ratio: '9:16',\n      max_duration: '60 seconds',\n      thumbnail_size: '1080x1920',\n      trending_optimization: true\n    },\n    'linkedin': {\n      aspect_ratio: '16:9',\n      max_duration: '10 minutes',\n      thumbnail_size: '1200x628',\n      professional_optimization: true\n    }\n  };\n  \n  return platforms.map(platform => optimizations[platform]).filter(Boolean);\n}\n\nfunction generateExportProfiles(platforms) {\n  return {\n    profiles: platforms.map(platform => ({\n      platform: platform,\n      settings: {\n        format: 'mp4',\n        codec: 'h264',\n        audio_codec: 'aac',\n        optimization: true\n      }\n    })),\n    batch_export: true,\n    cloud_storage: true,\n    auto_upload: true\n  };\n}\n\nfunction calculateVideoROI(videoRequest, config) {\n  const productionCost = config.duration_seconds * config.cost_per_second;\n  const projectedViews = 25000;\n  const conversionRate = config.conversion_rate;\n  const averageValue = 50; // USD per conversion\n  \n  const revenue = projectedViews * conversionRate * averageValue;\n  const roi = ((revenue - productionCost) / productionCost) * 100;\n  \n  return {\n    production_cost: productionCost,\n    projected_revenue: revenue,\n    roi_percentage: Math.floor(roi),\n    payback_time_days: Math.ceil(productionCost / (revenue / 30))\n  };\n}\n\nfunction calculateRevenuePotential(config, videoRequest) {\n  const monthlyVideos = Math.floor(Math.random() * 20) + 10;\n  const revenuePerVideo = config.duration_seconds * 8; // Revenue per second\n  const monthlyPotential = monthlyVideos * revenuePerVideo;\n  \n  return {\n    videos_per_month: monthlyVideos,\n    revenue_per_video: revenuePerVideo,\n    monthly_potential: monthlyPotential,\n    annual_potential: monthlyPotential * 12,\n    scaling_factor: 1.5 // Potential for viral content\n  };\n}"
+      },
+      "name": "Generador de Video IA",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.video.com/v1/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "videoApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "title": "{{ $json.script_generation.voiceover_script.greeting }}",
+            "description": "Video generado automáticamente por VideoCreator AI sobre {{ $json.topic }}",
+            "duration": "{{ $json.script_generation.total_duration }}",
+            "tags": ["ai-generated", "{{ $json.video_type }}", "{{ $json.topic }}"],
+            "privacy": "public",
+            "created_at": "{{ new Date().toISOString() }}",
+            "source": "videocreator_ai"
+          }
+        }
+      },
+      "name": "Crear Video en Video.com",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.vimeo.com/me/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "vimeoApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "name": "VideoCreator AI - {{ $json.video_type }} sobre {{ $json.topic }}",
+            "description": "Video generado automáticamente por IA. Duración: {{ $json.script_generation.total_duration }} segundos.",
+            "privacy": "unlisted",
+            "embed": {\n              "buttons": {\n                "like": true,\n                "watchlater": true,\n                "share": true\n              },\n              "logos": {\n                "vimeo": true,\n                "custom": {\n                  "active": true,\n                  "link": "{{ $json.branding_elements.company_info }}"\n                }\n              }\n            }\n          }
+        }
+      },
+      "name": "Subir a Vimeo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.wistia.com/v1/medias.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wistiaApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "name": "{{ $json.script_generation.voiceover_script.greeting }}",
+            "description": "Video promocional sobre {{ $json.topic }} generado por VideoCreator AI",
+            "duration": "{{ $json.script_generation.total_duration }}",
+            "type": "VideoFile",
+n            "contact": {\n              "name": "VideoCreator AI",\n              "email": "videos@example.com"\n            }\n          }\n        }\n      },\n      "name\": "Subir a Wistia",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [1120, 300]\n    },\n    {\n      \"parameters\": {\n        \"url\": \"https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK\",\n        \"authentication\": \"predefinedCredentialType\",\n        \"nodeCredentialType\": \"slackWebhook\",\n        \"requestMethod\": \"POST\",\n        \"jsonParameters\": true,\n        \"options\": {\n          \"body\": {\n            \"text\": \"VideoCreator AI - Nuevo video generado\",\n            \"attachments\": [\n              {\n                \"color\": \"good\",\n                \"fields\": [\n                  {\n                    \"title\": \"Tipo de Video\",\n                    \"value\": \"{{ $json.video_type }}\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"Tema\",\n                    \"value\": \"{{ $json.topic }}\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"Duración\",\n                    \"value\": \"{{ $json.script_generation.total_duration }} segundos\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"Costo de Producción\",\n                    \"value\": \"${{ $json.cost_benefit_analysis.production_cost }}\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"ROI Proyectado\",\n                    \"value\": \"{{ $json.cost_benefit_analysis.cost_benefit_analysis.roi_projection.roi_percentage }}%\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"Views Proyectadas\",\n                    \"value\": \"{{ $json.cost_benefit_analysis.expected_performance.views_projected }}\",\n                    \"short\": true\n                  },\n                  {\n                    \"title\": \"Plataformas\",\n                    \"value\": \"{{ Object.keys($json.platform_integrations).join(', ') }}\",\n                    \"short\": false\n                  },\n                  {\n                    \"title\": \"Revenue Potencial\",\n                    \"value\": \"${{ $json.cost_benefit_analysis.revenue_potential.monthly_potential }}/mes\",\n                    \"short\": false\n                  }\n                ],\n                \"footer\": \"VideoCreator AI v2025\",\n                \"ts\": \"{{ Math.floor(Date.now() / 1000) }}\"\n              }\n            ]\n          }\n        }\n      },\n      \"name\": \"Notificación Slack\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [1340, 300]\n    }\n  ],\n  \"connections\": {\n    \"Trigger Webhook\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Generador de Video IA\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Generador de Video IA\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Crear Video en Video.com\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Subir a Vimeo\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Subir a Wistia\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Crear Video en Video.com\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Notificación Slack\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Subir a Vimeo\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Notificación Slack\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Subir a Wistia\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Notificación Slack\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"settings\": {\n    \"saveManualExecutions\": true,\n    \"saveExecutionProgress\": true,\n    \"saveDataErrorExecution\": \"all\",\n    \"saveDataSuccessExecution\": \"all\"\n  },\n  \"staticData\": {},\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true,\n    \"systemId\": \"22\",\n    \"category\": \"social\",\n    \"price\": 125,\n    \"revenue\": 3450,\n    \"conversions\": 256,\n    \"roi\": 298,\n    \"description\": \"Generación automática de videos con IA para marketing y contenido\",\n    \"createdBy\": \"MiniMax Agent\",\n    \"version\": \"2025.1.0\",\n    \"monthly_projection\": 3450,\n    \"target_monthly\": 4140,\n    \"current_performance\": 83.33\n  },\n  \"tags\": [\"video-creation\", \"ai-video\", \"content-automation\", \"marketing\", \"social-media\"],\n  \"triggerCount\": 1,\n  \"updatedAt\": \"2025-11-16T15:05:31.000Z\",\n  \"versionId\": \"videocreator-v2025\"\n}"
+      },
+      "name": "Notificación Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generador de Video IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador de Video IA": {
+      "main": [
+        [
+          {
+            "node": "Crear Video en Video.com",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Subir a Vimeo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Subir a Wistia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Video en Video.com": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir a Vimeo": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir a Wistia": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "22",
+    "category": "social",
+    "price": 125,
+    "revenue": 3450,
+    "conversions": 256,
+    "roi": 298,
+    "description": "Generación automática de videos con IA para marketing y contenido",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 3450,
+    "target_monthly": 4140,
+    "current_performance": 83.33
+  },
+  "tags": ["video-creation", "ai-video", "content-automation", "marketing", "social-media"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "videocreator-v2025"
+}

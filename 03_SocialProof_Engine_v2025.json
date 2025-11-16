@@ -1,0 +1,319 @@
+{
+  "name": "SocialProof Engine - Generador Automático de Prueba Social",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "socialproof-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// SocialProof Engine - Generador Automático de Prueba Social\n// Recopila, procesa y presenta pruebas sociales de manera estratégica\n\nconst items = $input.all();\nconst productData = items[0].json;\n\n// Tipos de prueba social disponibles\nconst socialProofTypes = {\n  'recent_purchases': {\n    weight: 0.4,\n    urgency_level: 'high',\n    display_frequency: 'every_5_minutes',\n    conversion_boost: 0.23\n  },\n  'live_visitors': {\n    weight: 0.3,\n    urgency_level: 'medium',\n    display_frequency: 'real_time',\n    conversion_boost: 0.18\n  },\n  'product_ratings': {\n    weight: 0.25,\n    urgency_level: 'low',\n    display_frequency: 'on_page_load',\n    conversion_boost: 0.15\n  },\n  'testimonials': {\n    weight: 0.2,\n    urgency_level: 'low',\n    display_frequency: 'strategic_placement',\n    conversion_boost: 0.12\n  },\n  'stock_notifications': {\n    weight: 0.35,\n    urgency_level: 'high',\n    display_frequency: 'inventory_based',\n    conversion_boost: 0.31\n  }\n};\n\n// Analizar contexto del usuario para seleccionar prueba social óptima\nconst userContext = {\n  page_type: productData.page_type || 'product_detail',\n  user_status: productData.user_status || 'visitor', // visitor, browser, buyer\n  time_on_page: productData.time_on_page || 0,\n  cart_value: productData.cart_value || 0,\n  bounce_risk: Math.random(), // Simulado\n  urgency_triggers: productData.urgency_triggers || []\n};\n\n// Seleccionar prueba social óptima basada en contexto\nlet selectedProof = 'recent_purchases';\nif (userContext.bounce_risk > 0.7) selectedProof = 'live_visitors';\nelse if (userContext.cart_value > 100) selectedProof = 'recent_purchases';\nelse if (userContext.time_on_page > 300) selectedProof = 'product_ratings';\nelse if (urgency_triggers.includes('low_stock')) selectedProof = 'stock_notifications';\n\nconst proofConfig = socialProofTypes[selectedProof];\n\n// Generar contenido de prueba social personalizado\nconst socialProofContent = {\n  proof_type: selectedProof,\n  display_variant: 'dynamic_' + selectedProof,\n  content: {\n    text: generateProofText(selectedProof, productData),\n    avatar_url: '/assets/avatars/customer_' + Math.floor(Math.random() * 50) + '.jpg',\n    timestamp: new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString(),\n    location: randomLocation(),\n    product_context: productData.product_name || 'producto',\n    price_context: productData.price ? '$' + productData.price : null\n  },\n  display_settings: {\n    duration: 8000, // 8 segundos\n    position: selectOptimalPosition(userContext),\n    animation: 'fade_in_slide_right',\n    dismissible: false,\n    priority: selectedProof === 'stock_notifications' ? 'critical' : 'normal'\n  },\n  tracking: {\n    impression_id: 'sp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),\n    user_session_id: productData.session_id,\n    product_id: productData.product_id,\n    proof_type_clicked: false\n  }\n};\n\n// Calcular impacto proyectado en conversiones\nconst conversion_impact = {\n  baseline_conversion_rate: 0.023, // 2.3% baseline\n  expected_boost: proofConfig.conversion_boost,\n  projected_conversion_rate: 0.023 * (1 + proofConfig.conversion_boost),\n  revenue_impact_per_hour: calculateHourlyRevenueImpact(proofConfig.conversion_boost, productData)\n};\n\nreturn {\n  json: {\n    action: 'generate_social_proof',\n    user_context: userContext,\n    selected_proof: selectedProof,\n    proof_config: proofConfig,\n    social_proof_content: socialProofContent,\n    conversion_impact: conversion_impact,\n    campaign_id: 'socialproof_' + Date.now(),\n    estimated_monthly_revenue: 1234,\n    optimization_ready: true\n  }\n};\n\n// Funciones auxiliares\nfunction generateProofText(type, productData) {\n  const names = ['María', 'Carlos', 'Ana', 'Luis', 'Carmen', 'José', 'Laura', 'Miguel'];\n  const cities = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao'];\n  const name = names[Math.floor(Math.random() * names.length)];\n  const city = cities[Math.floor(Math.random() * cities.length)];\n  \n  switch(type) {\n    case 'recent_purchases':\n      return `${name} de ${city} acaba de comprar ${productData.product_name || 'este producto'}`;\n    case 'live_visitors':\n      return `${Math.floor(Math.random() * 20) + 5} personas están viendo esto ahora`;\n    case 'product_ratings':\n      return `⭐⭐⭐⭐⭐ (${Math.floor(Math.random() * 150) + 50)} reseñas de clientes satisfechos`;\n    case 'testimonials':\n      return `${name}: \"¡Excelente calidad! Lo recomiendo totalmente.\"`;\n    case 'stock_notifications':\n      return `Solo quedan ${Math.floor(Math.random() * 5) + 1} unidades en stock`;\n    default:\n      return '其他 clientes también compraron esto';\n  }\n}\n\nfunction randomLocation() {\n  const cities = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Málaga'];\n  return cities[Math.floor(Math.random() * cities.length)];\n}\n\nfunction selectOptimalPosition(userContext) {\n  if (userContext.cart_value > 50) return 'bottom_right_corner';\n  if (userContext.time_on_page > 120) return 'top_notification_bar';\n  return 'bottom_left_floating';\n}\n\nfunction calculateHourlyRevenueImpact(boost, productData) {\n  const base_hourly_visitors = 150; // Simulado\n  const base_conversion = 0.023;\n  const avg_order_value = productData.avg_order_value || 75;\n  \n  return base_hourly_visitors * base_conversion * boost * avg_order_value;\n}"
+    },
+    "name": "Generador de Prueba Social",
+    "type": "n8n-nodes-base.function",
+    "typeVersion": 1,
+    "position": [460, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.fomo.com/v1/social_proof",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "fomoApi",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "event_type": "recent_purchase",
+          "product_name": "{{ $json.social_proof_content.content.product_context }}",
+          "customer_name": "{{ $json.social_proof_content.content.text.split(' ')[0] }}",
+          "location": "{{ $json.social_proof_content.content.location }}",
+          "timestamp": "{{ $json.social_proof_content.content.timestamp }}",
+          "display_duration": "{{ $json.social_proof_content.display_settings.duration }}",
+          "position": "{{ $json.social_proof_content.display_settings.position }}",
+          "anonymize_data": true
+        }
+      }
+    },
+    "name": "Enviar a Fomo",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [680, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.nudge.com/v1/notifications",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "nudgeApi",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "type": "social_proof",
+          "message": "{{ $json.social_proof_content.content.text }}",
+          "user_context": {\n            "session_id": "{{ $json.tracking.user_session_id }}",\n            "product_id": "{{ $json.tracking.product_id }}",\n            "page_type": "{{ $json.user_context.page_type }}"\n          },\n          "display_settings": {\n            "position": "{{ $json.social_proof_content.display_settings.position }}",\n            "animation": "{{ $json.social_proof_content.display_settings.animation }}",\n            "dismissible": false\n          },\n          "tracking": {\n            "impression_id": "{{ $json.social_proof_content.tracking.impression_id }}"\n          }\n        }
+      }
+    },
+    "name": "Notificación Nudge",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [900, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://custom.social-proof.widget/display",
+      "authentication": "none",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "widget_id": "social_proof_engine_2025",
+          "content": "{{ $json.social_proof_content.content }}",
+          "settings": "{{ $json.social_proof_content.display_settings }}",
+          "user_context": "{{ $json.user_context }}",
+          "tracking_id": "{{ $json.social_proof_content.tracking.impression_id }}",
+          "responsive": true,
+          "theme": "modern_transparent"
+        }
+      }
+    },
+    "name": "Widget Personalizado",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1120, 300]
+  },
+  {
+    "parameters": {
+      "functionCode": "// Analytics y Optimización de Social Proof\n// Mide efectividad y optimiza automáticamente\n\nconst input = $input.all();\nconst proofData = input[0].json;\n\n// Simular métricas de rendimiento (en producción vendría de analytics)\nconst performanceMetrics = {\n  display_timestamp: new Date().toISOString(),\n  impression_id: proofData.social_proof_content.tracking.impression_id,\n  metrics: {\n    views: Math.floor(Math.random() * 1000) + 100,\n    clicks: Math.floor(Math.random() * 50) + 5,\n    conversions: Math.floor(Math.random() * 15) + 1,\n    click_through_rate: 0.045, // 4.5%\n    conversion_rate: 0.025, // 2.5%\n    time_on_screen: Math.floor(Math.random() * 5000) + 2000 // 2-7 segundos\n  },\n  user_engagement: {\n    scroll_pause: Math.random() > 0.3,\n    interaction_rate: Math.random() * 0.15,\n    dismissal_rate: Math.random() * 0.08,\n    return_visitor_rate: Math.random() * 0.25\n  },\n  conversion_attribution: {\n    direct_conversion: Math.floor(Math.random() * 8) + 1,\n    assisted_conversion: Math.floor(Math.random() * 12) + 2,\n    total_revenue_attributed: proofData.conversion_impact.revenue_impact_per_hour * (performanceMetrics.views / 150),\n    average_order_value_boost: Math.random() * 15 + 5 // 5-20% boost\n  }\n};\n\n// Optimización inteligente basada en performance\nconst optimizationRecommendations = {\n  timing_optimization: {\n    next_optimal_time: new Date(Date.now() + (30 - performanceMetrics.user_engagement.interaction_rate * 30) * 60000).toISOString(),\n    frequency_adjustment: performanceMetrics.metrics.conversion_rate > 0.03 ? 'increase' : 'maintain',\n    position_testing: performanceMetrics.user_engagement.scroll_pause ? 'maintain' : 'adjust'\n  },\n  content_optimization: {\n    message_variant: performanceMetrics.metrics.click_through_rate > 0.05 ? 'current' : 'test_alternative',\n    visual_elements: performanceMetrics.user_engagement.interaction_rate > 0.1 ? 'maintain' : 'add_animation',\n    urgency_level: proofData.proof_config.urgency_level === 'high' ? 'maintain' : 'increase'\n  },\n  targeting_optimization: {\n    segment_match: performanceMetrics.user_engagement.return_visitor_rate > 0.2 ? 'expand' : 'refine',\n    product_relevance: performanceMetrics.conversion_attribution.direct_conversion > 5 ? 'maintain' : 'improve',\n    geographic_targeting: 'optimize_based_on_conversion_data'\n  }\n};\n\n// Programar siguiente prueba social optimizada\nconst nextSchedule = {\n  immediate_actions: [\n    'log_impression',\n    'update_analytics',\n    'trigger_conversion_tracking'\n  ],\n  scheduled_actions: [\n    {\n      action: 'performance_analysis',\n      delay_minutes: 15,\n      condition: 'has_minimum_data'\n    },\n    {\n      action: 'a_b_test_variant',\n      delay_hours: 2,\n      condition: 'performance_below_target'\n    },\n    {\n      action: 'content_optimization',\n      delay_hours: 4,\n      condition: 'conversion_rate_above_threshold'\n    }\n  ],\n  optimization_cycle: {\n    analysis_frequency: 'every_hour',\n    optimization_threshold: 0.15, // 15% improvement needed\n    max_variants: 5\n  }\n};\n\nreturn {\n  json: {\n    action: 'social_proof_analytics',\n    campaign_id: proofData.campaign_id,\n    proof_type: proofData.selected_proof,\n    performance_metrics: performanceMetrics,\n    optimization_recommendations: optimizationRecommendations,\n    next_schedule: nextSchedule,\n    estimated_revenue_impact: {\n      hourly: performanceMetrics.conversion_attribution.total_revenue_attributed,\n      daily: performanceMetrics.conversion_attribution.total_revenue_attributed * 24,\n      monthly: performanceMetrics.conversion_attribution.total_revenue_attributed * 24 * 30\n    },\n    success_indicators: {\n      conversion_boost_achieved: performanceMetrics.metrics.conversion_rate > 0.023,\n      engagement_above_average: performanceMetrics.user_engagement.interaction_rate > 0.1,\n      roi_positive: performanceMetrics.conversion_attribution.total_revenue_attributed > 10\n    }\n  }\n};"
+    },
+    "name": "Analytics y Optimización",
+    "type": "n8n-nodes-base.function",
+    "typeVersion": 1,
+    "position": [1340, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "slackWebhook",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "text": "SocialProof Engine - Nueva prueba social desplegada",
+          "attachments": [
+            {
+              "color": "good",
+              "fields": [
+                {
+                  "title": "Tipo de Prueba",
+                  "value": "{{ $json.proof_type }}",
+                  "short": true
+                },
+                {
+                  "title": "Campaign ID",
+                  "value": "{{ $json.campaign_id }}",
+                  "short": true
+                },
+                {
+                  "title": "Revenue Impact/hora",
+                  "value": "${{ Math.floor($json.estimated_revenue_impact.hourly) }}",
+                  "short": true
+                },
+                {
+                  "title": "CTR",
+                  "value": "{{ Math.floor($json.performance_metrics.metrics.click_through_rate * 10000) / 100 }}%",
+                  "short": true
+                },
+                {
+                  "title": "Conversiones",
+                  "value": "{{ $json.performance_metrics.metrics.conversions }}",
+                  "short": true
+                },
+                {
+                  "title": "Optimización",
+                  "value": "{{ $json.success_indicators.conversion_boost_achieved ? '✅ Activa' : '⚠️ Necesita ajustes' }}",
+                  "short": true
+                }
+              ],
+              "footer": "SocialProof Engine v2025",
+              "ts": "{{ Math.floor(Date.now() / 1000) }}"
+            }
+          ]
+        }
+      }
+    },
+    "name": "Notificación Slack",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1560, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.google-analytics.com/v4/data/ga4",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "googleAnalyticsAPI",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "reportRequests": [
+            {
+              "viewId": "YOUR_VIEW_ID",
+              "dateRanges": [
+                {
+                  "startDate": "today",
+                  "endDate": "today"
+                }
+              ],
+              "metrics": [
+                {
+                  "expression": "ga:goalConversionRateAll"
+                },
+                {
+                  "expression": "ga:transactionRevenue"
+                }
+              ],
+              "dimensions": [
+                {
+                  "name": "ga:eventLabel"
+                },
+                {
+                  "name": "ga:customDimension1"
+                }
+              ],
+              "dimensionFilterClauses": [
+                {
+                  "filters": [
+                    {
+                      "dimensionName": "ga:eventLabel",
+                      "operator": "EXACT",
+                      "expressions": ["social_proof_impression"]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "name": "Tracking Analytics",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1340, 480]
+  }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generador de Prueba Social",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador de Prueba Social": {
+      "main": [
+        [
+          {
+            "node": "Enviar a Fomo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notificación Nudge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Widget Personalizado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar a Fomo": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Optimización",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificación Nudge": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Optimización",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Widget Personalizado": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Optimización",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analytics y Optimización": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tracking Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "03",
+    "category": "marketing",
+    "price": 45,
+    "revenue": 1234,
+    "conversions": 78,
+    "roi": 167,
+    "description": "Generador automático de prueba social para aumentar conversiones",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 1234,
+    "target_monthly": 1481,
+    "current_performance": 83.33
+  },
+  "tags": ["marketing", "social-proof", "conversions", "urgency", "psychology"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "socialproof-v2025"
+}

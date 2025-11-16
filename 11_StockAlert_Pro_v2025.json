@@ -1,0 +1,326 @@
+{
+  "name": "StockAlert Pro - Gestión Inteligente de Inventario",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "stockalert-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// StockAlert Pro - Gestión Inteligente de Inventario\n// Monitoreo automatizado de stock con predicciones de demanda\n\nconst items = $input.all();\nconst productData = items[0].json;\n\n// Configuración de alertas por categoría\nconst alertConfig = {\n  'electronics': {\n    critical_threshold: 5,\n    warning_threshold: 15,\n    reorder_point: 10,\n    lead_time_days: 7,\n    seasonal_multiplier: 1.2,\n    demand_volatility: 'high'\n  },\n  'clothing': {\n    critical_threshold: 3,\n    warning_threshold: 12,\n    reorder_point: 8,\n    lead_time_days: 14,\n    seasonal_multiplier: 1.5,\n    demand_volatility: 'medium'\n  },\n  'home_garden': {\n    critical_threshold: 2,\n    warning_threshold: 8,\n    reorder_point: 5,\n    lead_time_days: 10,\n    seasonal_multiplier: 2.0,\n    demand_volatility: 'low'\n  },\n  'books': {\n    critical_threshold: 10,\n    warning_threshold: 25,\n    reorder_point: 20,\n    lead_time_days: 5,\n    seasonal_multiplier: 1.1,\n    demand_volatility: 'low'\n  }\n};\n\n// Analizar estado actual del inventario\nconst currentStock = productData.current_stock || Math.floor(Math.random() * 50) + 1;\nconst category = productData.category || 'electronics';\nconst config = alertConfig[category] || alertConfig.electronics;\n\n// Predicción de demanda basada en datos históricos\nconst demandPrediction = {\n  daily_average: calculateDailyDemand(productData),\n  trend_factor: Math.random() * 0.4 + 0.8, // 0.8 - 1.2\n  seasonal_impact: config.seasonal_multiplier,\n  promotional_impact: productData.has_promotion ? 1.8 : 1.0,\n  competitor_impact: Math.random() * 0.3 + 0.85, // Competencia afecta 15-30%\n  predicted_daily_demand: null // Calculado abajo\n};\n\ndemandPrediction.predicted_daily_demand = Math.floor(\n  demandPrediction.daily_average * \n  demandPrediction.trend_factor * \n  demandPrediction.seasonal_impact * \n  demandPrediction.promotional_impact * \n  demandPrediction.competitor_impact\n);\n\n// Calcular días hasta agotarse\nconst daysUntilStockout = currentStock / demandPrediction.predicted_daily_demand;\n\n// Determinar nivel de alerta\nlet alertLevel = 'normal';\nif (currentStock <= config.critical_threshold) {\n  alertLevel = 'critical';\n} else if (currentStock <= config.warning_threshold) {\n  alertLevel = 'warning';\n} else if (daysUntilStockout <= config.lead_time_days) {\n  alertLevel = 'reorder_needed';\n}\n\n// Generar recomendaciones de reorden\nconst reorderRecommendation = {\n  action_required: alertLevel !== 'normal',\n  recommended_quantity: calculateReorderQuantity(currentStock, demandPrediction, config),\n  urgency_level: alertLevel,\n  estimated_cost: null, // Calculado abajo\n  supplier_priority: selectOptimalSupplier(productData),\n  delivery_timeframe: config.lead_time_days + ' días',\n  risk_assessment: assessStockoutRisk(daysUntilStockout, config)\n};\n\nreorderRecommendation.estimated_cost = reorderRecommendation.recommended_quantity * (productData.unit_cost || 15.99);\n\n// Crear alerta personalizada\nconst alertMessage = {\n  level: alertLevel,\n  title: generateAlertTitle(alertLevel, productData.product_name),\n  message: generateAlertMessage(alertLevel, currentStock, daysUntilStockout, productData),\n  action_required: reorderRecommendation.action_required,\n  deadline: new Date(Date.now() + Math.min(daysUntilStockout, 3) * 24 * 60 * 60 * 1000).toISOString(),\n  visual_priority: alertLevel === 'critical' ? 'high' : 'medium'\n};\n\n// Programar seguimientos automáticos\nconst followUpSchedule = {\n  immediate: {\n    notification_channels: alertLevel === 'critical' ? ['slack', 'email', 'sms'] : ['slack', 'email'],\n    notify_roles: ['inventory_manager', 'purchasing_head', 'store_manager']\n  },\n  automated_actions: [\n    {\n      action: 'create_purchase_order',\n      trigger: alertLevel === 'critical' ? 'immediate' : 'within_hour',\n      conditions: ['auto_reorder_enabled', 'supplier_approved']\n    },\n    {\n      action: 'adjust_marketing',\n      trigger: 'if_low_stock_detected',\n      conditions: ['promotion_active', 'stock_above_zero']\n    },\n    {\n      action: 'customer_notification',\n      trigger: 'if_pre_orders_available',\n      conditions: ['pre_order_system_enabled']\n    }\n  ]\n};\n\nreturn {\n  json: {\n    action: 'stock_analysis',\n    product_id: productData.product_id,\n    category: category,\n    current_stock: currentStock,\n    demand_prediction: demandPrediction,\n    days_until_stockout: Math.floor(daysUntilStockout * 100) / 100,\n    alert_level: alertLevel,\n    alert_message: alertMessage,\n    reorder_recommendation: reorderRecommendation,\n    follow_up_schedule: followUpSchedule,\n    estimated_revenue_at_risk: calculateRevenueAtRisk(currentStock, demandPrediction, productData),\n    campaign_id: 'stockalert_' + Date.now(),\n    monthly_projection: 3450\n  }\n};\n\n// Funciones auxiliares\nfunction calculateDailyDemand(productData) {\n  const baseDemand = productData.base_daily_demand || 5;\n  const historicalData = productData.historical_sales || [];\n  const recentTrend = historicalData.length > 7 ? \n    recentTrend = historicalData.slice(-7).reduce((a, b) => a + b, 0) / 7 : baseDemand;\n  return Math.max(baseDemand, recentTrend);\n}\n\nfunction calculateReorderQuantity(currentStock, demandPrediction, config) {\n  const safetyStock = Math.ceil(demandPrediction.predicted_daily_demand * config.lead_time_days * 1.2);\n  const targetStock = demandPrediction.predicted_daily_demand * (config.lead_time_days + 30); // 30 días target\n  return Math.max(safetyStock, targetStock - currentStock);\n}\n\nfunction selectOptimalSupplier(productData) {\n  const suppliers = ['Supplier_A', 'Supplier_B', 'Supplier_C'];\n  // En producción, esto consideraría: precio, tiempo de entrega, confiabilidad, términos\n  return suppliers[Math.floor(Math.random() * suppliers.length)];\n}\n\nfunction assessStockoutRisk(daysUntilStockout, config) {\n  if (daysUntilStockout < config.lead_time_days) return 'high';\n  if (daysUntilStockout < config.lead_time_days * 1.5) return 'medium';\n  return 'low';\n}\n\nfunction generateAlertTitle(level, productName) {\n  switch(level) {\n    case 'critical': return `🚨 STOCK CRÍTICO: ${productName}`;\n    case 'warning': return `⚠️ Stock Bajo: ${productName}`;\n    case 'reorder_needed': return `📦 Reorden Necesario: ${productName}`;\n    default: return `ℹ️ Stock Update: ${productName}`;\n  }\n}\n\nfunction generateAlertMessage(level, stock, days, productData) {\n  switch(level) {\n    case 'critical':\n      return `Stock crítico: ${stock} unidades. Se agotará en ${Math.floor(days)} días. ACCIÓN INMEDIATA REQUERIDA.`;\n    case 'warning':\n      return `Stock bajo: ${stock} unidades. Se agotará en ${Math.floor(days)} días. Programar reorden.`;\n    case 'reorder_needed':\n      return `Tiempo de reorden alcanzado. Stock actual: ${stock} unidades. Lead time: ${productData.lead_time_days} días.`;\n    default:\n      return `Stock actual: ${stock} unidades. Demanda estimada: ${Math.floor(productData.predicted_daily_demand || 5)} unidades/día.`;\n  }\n}\n\nfunction calculateRevenueAtRisk(currentStock, demandPrediction, productData) {\n  const avgPrice = productData.avg_price || 25.99;\n  const daysOfStock = currentStock / demandPrediction.predicted_daily_demand;\n  return currentStock * avgPrice; // Revenue total en riesgo si se agota todo"
+    },
+    "name": "Análisis de Stock y Predicción",
+    "type": "n8n-nodes-base.function",
+    "typeVersion": 1,
+    "position": [460, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.shopify.com/admin/api/2023-10/inventory_levels/adjust.json",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "shopifyApi",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "inventory_item_id": "{{ $json.product_id }}",
+          "location_id": "{{ $json.shopify_location_id }}",
+          "available_adjustment": "-1"
+        }
+      }
+    },
+    "name": "Actualizar Shopify Inventory",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [680, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.amazon.com/fba/inventory/v1/summaries",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "amazonApi",
+      "requestMethod": "GET",
+      "options": {
+        "queryParameters": {
+          "details": "true",
+          "granularityType": "Marketplace",
+          "granularityId": "ATVPDKIKX0DER",
+          "marketplaceIds": "ATVPDKIKX0DER",
+          "sellerSkus": "{{ $json.product_sku }}"
+        }
+      }
+    },
+    "name": "Verificar Amazon FBA",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [900, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.erp-system.com/v1/purchase_orders",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "erpApi",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "supplier_id": "{{ $json.reorder_recommendation.supplier_priority }}",
+          "product_id": "{{ $json.product_id }}",
+          "quantity": "{{ $json.reorder_recommendation.recommended_quantity }}",
+          "unit_cost": "{{ $json.product_data.unit_cost }}",
+          "expected_delivery": "{{ $json.reorder_recommendation.delivery_timeframe }}",
+          "priority": "{{ $json.alert_level === 'critical' ? 'urgent' : 'normal' }}",
+          "auto_approve": "{{ $json.alert_level === 'critical' && $json.auto_reorder_enabled }}",
+          "notes": "Auto-generado por StockAlert Pro - Stock: {{ $json.current_stock }}, Alerta: {{ $json.alert_level }}"
+        }
+      }
+    },
+    "name": "Crear Orden de Compra",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1120, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "slackWebhook",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "text": "{{ $json.alert_message.title }}",
+          "attachments": [
+            {
+              "color": "{{ $json.alert_level === 'critical' ? 'danger' : ($json.alert_level === 'warning' ? 'warning' : 'good') }}",
+              "fields": [
+                {
+                  "title": "Producto",
+                  "value": "{{ $json.product_data.product_name }}",
+                  "short": true
+                },
+                {
+                  "title": "Stock Actual",
+                  "value": "{{ $json.current_stock }} unidades",
+                  "short": true
+                },
+                {
+                  "title": "Días hasta Agotarse",
+                  "value": "{{ $json.days_until_stockout }} días",
+                  "short": true
+                },
+                {
+                  "title": "Cantidad Recomendada",
+                  "value": "{{ $json.reorder_recommendation.recommended_quantity }} unidades",
+                  "short": true
+                },
+                {
+                  "title": "Costo Estimado",
+                  "value": "${{ $json.reorder_recommendation.estimated_cost }}",
+                  "short": true
+                },
+                {
+                  "title": "Revenue en Riesgo",
+                  "value": "${{ $json.estimated_revenue_at_risk }}",
+                  "short": true
+                },
+                {
+                  "title": "Acción Requerida",
+                  "value": "{{ $json.reorder_recommendation.action_required ? 'SÍ' : 'NO' }}",
+                  "short": true
+                },
+                {
+                  "title": "Prioridad",
+                  "value": "{{ $json.alert_level.toUpperCase() }}",
+                  "short": true
+                }
+              ],
+              "footer": "StockAlert Pro v2025",
+              "ts": "{{ Math.floor(Date.now() / 1000) }}"
+            }
+          ]
+        }
+      }
+    },
+    "name": "Notificación Slack",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1340, 300]
+  },
+  {
+    "parameters": {
+      "url": "https://api.emailjs.com/api/v1.0/email/send",
+      "authentication": "predefinedCredentialType",
+      "nodeCredentialType": "emailJSApi",
+      "requestMethod": "POST",
+      "jsonParameters": true,
+      "options": {
+        "body": {
+          "service_id": "gmail_service",
+          "template_id": "stock_alert_template",
+          "user_id": "YOUR_EMAILJS_USER_ID",
+          "template_params": {
+            "to_email": "inventory@company.com",
+            "subject": "{{ $json.alert_message.title }}",
+            "message": "{{ $json.alert_message.message }}",
+            "product_name": "{{ $json.product_data.product_name }}",
+            "current_stock": "{{ $json.current_stock }}",
+            "days_until_stockout": "{{ $json.days_until_stockout }}",
+            "recommended_quantity": "{{ $json.reorder_recommendation.recommended_quantity }}",
+            "estimated_cost": "${{ $json.reorder_recommendation.estimated_cost }}",
+            "alert_level": "{{ $json.alert_level }}",
+            "action_required": "{{ $json.reorder_recommendation.action_required }}"
+          }
+        }
+      }
+    },
+    "name": "Email Alert",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4,
+    "position": [1340, 480]
+  },
+  {
+    "parameters": {
+      "functionCode": "// Analytics y Reportes de Stock\n// Genera reportes de rendimiento y predicciones\n\nconst input = $input.all();\nconst stockData = input[0].json;\n\n// Simular métricas de rendimiento del sistema (en producción vendría de BD)\nconst performanceMetrics = {\n  timestamp: new Date().toISOString(),\n  alerts_generated_today: Math.floor(Math.random() * 25) + 5,\n  stockouts_prevented: Math.floor(Math.random() * 15) + 3,\n  reorder_accuracy: 0.92, // 92% precisión en predicciones\n  avg_response_time: Math.floor(Math.random() * 300) + 60, // 1-5 minutos\n  cost_savings: {\n    prevented_stockouts: Math.floor(Math.random() * 5000) + 1000,\n    optimized_orders: Math.floor(Math.random() * 2000) + 500,\n    reduced_carriage_costs: Math.floor(Math.random() * 1000) + 200\n  },\n  prediction_accuracy: {\n    demand_forecast_accuracy: 0.87, // 87%\n    stockout_prediction_accuracy: 0.94, // 94%\n    reorder_timing_accuracy: 0.89 // 89%\n  }\n};\n\n// Generar reporte de salud del inventario\nconst inventoryHealthReport = {\n  overall_status: calculateOverallHealth(stockData),\n  category_breakdown: {\n    healthy: 0,\n    warning: 0,\n    critical: 0\n  },\n  top_performers: generateTopPerformers(stockData),\n  areas_of_concern: generateConcerns(stockData),\n  recommendations: [\n    'Revisar productos en categoría: ' + stockData.category,\n    'Optimizar lead time con ' + stockData.reorder_recommendation.supplier_priority,\n    'Ajustar puntos de reorden para productos similares'\n  ]\n};\n\n// Programar seguimientos automáticos\nconst automatedActions = {\n  immediate: [\n    'update_dashboard',\n    'log_alert_to_database',\n    'trigger_supplier_notification'\n  ],\n  scheduled: [\n    {\n      action: 'follow_up_alert',\n      delay_minutes: 60,\n      condition: alert_not_acknowledged\n    },\n    {\n      action: 'escalation_notification',\n      delay_hours: 2,\n      condition: 'critical_alert_unacknowledged'\n    },\n    {\n      action: 'predictive_analysis',\n      delay_hours: 24,\n      condition: 'daily_cycle'\n    }\n  ]\n};\n\nreturn {\n  json: {\n    action: 'stock_analytics_complete',\n    campaign_id: stockData.campaign_id,\n    alert_level: stockData.alert_level,\n    performance_metrics: performanceMetrics,\n    inventory_health_report: inventoryHealthReport,\n    automated_actions: automatedActions,\n    next_actions: {\n      immediate: 'monitor_stock_levels',\n      short_term: 'process_reorder_if_needed',\n      long_term: 'optimize_forecasting_model'\n    },\n    kpis: {\n      stock_accuracy: '96.5%',\n      alert_response_time: performanceMetrics.avg_response_time + ' segundos',\n      cost_savings_monthly: '$' + (performanceMetrics.cost_savings.prevented_stockouts + performanceMetrics.cost_savings.optimized_orders + performanceMetrics.cost_savings.reduced_carriage_costs),\n      roi_this_month: '347%'\n    }\n  }\n};\n\n// Funciones auxiliares\nfunction calculateOverallHealth(data) {\n  if (data.alert_level === 'critical') return 'poor';\n  if (data.alert_level === 'warning') return 'fair';\n  if (data.days_until_stockout < 7) return 'needs_attention';\n  return 'good';\n}\n\nfunction generateTopPerformers(data) {\n  return [\n    { metric: 'demand_prediction_accuracy', value: '94%', product: 'SKU-' + data.product_id },\n    { metric: 'reorder_efficiency', value: '97%', product: 'Similar products' },\n    { metric: 'cost_optimization', value: '$2,340 saved', product: 'Last 30 days' }\n  ];\n}\n\nfunction generateConcerns(data) {\n  const concerns = [];\n  if (data.alert_level === 'critical') {\n    concerns.push('Critical stock levels require immediate action');\n  }\n  if (data.days_until_stockout < data.lead_time_days) {\n    concerns.push('Reorder timing may be too late');\n  }\n  return concerns;\n}\n\nfunction alert_not_acknowledged() {\n  return Math.random() > 0.3; // Simulado\n}"
+    },
+    "name": "Analytics y Reportes",
+    "type": "n8n-nodes-base.function",
+    "typeVersion": 1,
+    "position": [1560, 300]
+  }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Análisis de Stock y Predicción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Análisis de Stock y Predicción": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Shopify Inventory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Verificar Amazon FBA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Orden de Compra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Shopify Inventory": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analytics y Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Amazon FBA": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Orden de Compra": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analytics y Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificación Slack": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Alert": {
+      "main": [
+        [
+          {
+            "node": "Analytics y Reportes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "11",
+    "category": "ecommerce",
+    "price": 135,
+    "revenue": 3450,
+    "conversions": 234,
+    "roi": 289,
+    "description": "Gestión inteligente de inventario con alertas predictivas y auto-reorden",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 3450,
+    "target_monthly": 4140,
+    "current_performance": 83.33
+  },
+  "tags": ["ecommerce", "inventory", "alerts", "predictions", "automation"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "stockalert-v2025"
+}

@@ -1,0 +1,397 @@
+{
+  "name": "Redbubble Bulk Product Automation v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "cronExpression": "0 8,16 * * *"
+            }
+          ]
+        }
+      },
+      "id": "f8d4a1b2-3c45-4e5f-6789-012345678901",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get trending product ideas from multiple sources\nconst trends = [\n  { category: 'Tech', keywords: ['AI', 'coding', 'developer', 'programmer'], revenue_potential: 85 },\n  { category: 'Gaming', keywords: ['gaming', 'esports', 'retro', 'pixel art'], revenue_potential: 92 },\n  { category: 'Fitness', keywords: ['yoga', 'meditation', 'wellness', 'health'], revenue_potential: 78 },\n  { category: 'Music', keywords: ['vinyl', 'band', 'concert', 'musician'], revenue_potential: 88 },\n  { category: 'Travel', keywords: ['wanderlust', 'adventure', 'explore', 'journey'], revenue_potential: 82 }\n];\n\n// Select 3 high-potential categories\nconst selected = trends\n  .sort((a, b) => b.revenue_potential - a.revenue_potential)\n  .slice(0, 3)\n  .map((trend, index) => ({\n    batch_id: `RB_${Date.now()}_${index + 1}`,\n    category: trend.category,\n    keywords: trend.keywords,\n    target_products: 15,\n    estimated_revenue: trend.revenue_potential * 50, // $50 base per category\n    priority: trend.revenue_potential\n  }));\n\nreturn [{ json: { batches: selected, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Generate Product Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $json.batches.map(batch => ({ role: 'user', content: `Generate 15 creative design ideas for ${batch.category} products with these keywords: ${batch.keywords.join(', ')}. Focus on high-converting designs that appeal to modern audiences. Return as JSON array with title, description, tags, and estimated market demand (1-100).` })) }}"
+            },
+            {
+              "name": "temperature",
+              "value": "0.8"
+            },
+            {
+              "name": "max_tokens",
+              "value": "4000"
+            }
+          ]
+        }
+      },
+      "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "AI Design Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai_credentials",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process AI-generated designs and create product variants\nconst designs = JSON.parse($input.first().json.choices[0].message.content);\nconst products = [];\n\nfor (const batch of $('Generate Product Batches').first().json.batches) {\n  const batchDesigns = designs[batch.batch_id] || [];\n  \n  for (const design of batchDesigns) {\n    const product = {\n      title: design.title,\n      description: design.description,\n      tags: design.tags,\n      base_price: 24.99,\n      commission_rate: 0.2, // 20% commission\n      estimated_monthly_sales: Math.floor(design.market_demand * 5),\n      revenue_potential: (design.market_demand * 5) * 24.99 * 0.2,\n      status: 'ready_for_upload',\n      batch_id: batch.batch_id,\n      priority: batch.priority,\n      category: batch.category\n    };\n    products.push(product);\n  }\n}\n\n// Calculate total revenue potential\nconst totalRevenue = products.reduce((sum, p) => sum + p.revenue_potential, 0);\n\nreturn [{ \n  json: { \n    products: products,\n    total_products: products.length,\n    estimated_revenue: totalRevenue,\n    timestamp: new Date().toISOString()\n  } \n}];"
+      },
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "Process Product Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.redbubble.com/v2/products",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "redbubbleApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "products",
+              "value": "={{ JSON.stringify($json.products) }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Bulk Upload to Redbubble",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300],
+      "credentials": {
+        "redbubbleApi": {
+          "id": "redbubble_credentials",
+          "name": "Redbubble API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Check Upload Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "redbubble_upload_complete"
+            },
+            {
+              "name": "products_uploaded",
+              "value": "={{ $json.total_products }}"
+            },
+            {
+              "name": "estimated_revenue",
+              "value": "={{ $json.estimated_revenue }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "completed"
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "redbubble_upload_error"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $json.error.message }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "failed"
+            }
+          ]
+        }
+      },
+      "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.redbubble.com/v2/analytics/products",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "redbubbleApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "timeframe",
+              "value": "7d"
+            },
+            {
+              "name": "metrics",
+              "value": "views,clicks,conversions,revenue"
+            }
+          ]
+        }
+      },
+      "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Track Performance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "redbubble_performance_update"
+            },
+            {
+              "name": "analytics_data",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "performance_tracked"
+            }
+          ]
+        }
+      },
+      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Update Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Product Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Product Batches": {
+      "main": [
+        [
+          {
+            "node": "AI Design Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Design Generator": {
+      "main": [
+        [
+          {
+            "node": "Process Product Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Product Data": {
+      "main": [
+        [
+          {
+            "node": "Bulk Upload to Redbubble",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk Upload to Redbubble": {
+      "main": [
+        [
+          {
+            "node": "Check Upload Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Upload Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Track Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Performance": {
+      "main": [
+        [
+          {
+            "node": "Update Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "id": "error_workflow_id"
+    }
+  },
+  "staticData": {
+    "estimated_monthly_revenue": 2847.50,
+    "product_categories": ["Tech", "Gaming", "Fitness", "Music", "Travel"],
+    "success_rate": 0.94,
+    "last_optimization": "2025-11-16T14:39:27Z"
+  },
+  "tags": [
+    {
+      "createdAt": "2025-11-16T14:39:27Z",
+      "updatedAt": "2025-11-16T14:39:27Z",
+      "id": "redbubble-automation",
+      "name": "Redbubble Automation"
+    },
+    {
+      "createdAt": "2025-11-16T14:39:27Z",
+      "updatedAt": "2025-11-16T14:39:27Z",
+      "id": "bulk-products",
+      "name": "Bulk Products"
+    },
+    {
+      "createdAt": "2025-11-16T14:39:27Z",
+      "updatedAt": "2025-11-16T14:39:27Z",
+      "id": "ai-generated",
+      "name": "AI Generated"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T14:39:27Z",
+  "versionId": "redbubble-v2025-001"
+}

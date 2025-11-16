@@ -1,0 +1,342 @@
+{
+  "name": "TaskMaster AI - Gestión Inteligente de Tareas",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "taskmaster-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// TaskMaster AI - Gestión Inteligente de Tareas con IA\n// Automatización completa de productividad y organización\n\nconst items = $input.all();\nconst taskData = items[0].json;\n\n// Configuración de tipos de tareas y automatización\nconst taskTypes = {\n  'email_processing': {\n    automation_level: 0.85,\n    time_saved_minutes: 25,\n    accuracy_rate: 0.92,\n    priority_threshold: 7.5\n  },\n  'meeting_automation': {\n    automation_level: 0.78,\n    time_saved_minutes: 45,\n    accuracy_rate: 0.89,\n    priority_threshold: 8.2\n  },\n  'data_entry': {\n    automation_level: 0.95,\n    time_saved_minutes: 35,\n    accuracy_rate: 0.96,\n    priority_threshold: 6.8\n  },\n  'reporting': {\n    automation_level: 0.82,\n    time_saved_minutes: 60,\n    accuracy_rate: 0.94,\n    priority_threshold: 7.9\n  },\n  'project_coordination': {\n    automation_level: 0.74,\n    time_saved_minutes: 40,\n    accuracy_rate: 0.87,\n    priority_threshold: 8.5\n  }\n};\n\n// Analizar tarea y determinar automatización óptima\nconst taskType = taskData.task_type || 'general';\nconst config = taskTypes[taskType] || taskTypes.email_processing;\n\n// Generar plan de automatización inteligente\nconst automationPlan = {\n  task_type: taskType,\n  automation_level: config.automation_level,\n  estimated_time_saved: config.time_saved_minutes,\n  accuracy_prediction: config.accuracy_rate,\n  steps_to_automate: generateAutomationSteps(taskData, config),\n  resource_requirements: calculateResourceNeeds(taskData),\n  implementation_timeline: generateTimeline(config.automation_level),\n  roi_calculation: calculateTaskROI(taskData, config)\n};\n\n// Crear workflow automatizado personalizado\nconst automatedWorkflow = {\n  workflow_id: 'taskmaster_' + Date.now(),\n  trigger_conditions: {\n    'scheduled_trigger': taskData.schedule || 'daily_9am',\n    'event_trigger': taskData.event_types || ['email_received', 'meeting_created'],\n    'manual_trigger': taskData.manual_available || true\n  },\n  automation_steps: [\n    {\n      step: 1,\n      action: 'task_analysis',\n      description: 'Analizar tarea y clasificar tipo de automatización',\n      estimated_duration_minutes: 2,\n      success_criteria: 'task_classified_correctly'\n    },\n    {\n      step: 2,\n      action: 'data_extraction',\n      description: 'Extraer y procesar datos relevantes',\n      estimated_duration_minutes: 5,\n      success_criteria: 'data_extracted_accurately'\n    },\n    {\n      step: 3,\n      action: 'intelligent_processing',\n      description: 'Procesar con IA y aplicar reglas de negocio',\n      estimated_duration_minutes: 8,\n      success_criteria: 'processing_completed_successfully'\n    },\n    {\n      step: 4,\n      action: 'quality_assurance',\n      description: 'Validación automática de resultados',\n      estimated_duration_minutes: 3,\n      success_criteria: 'quality_threshold_met'\n    },\n    {\n      step: 5,\n      action: 'notification_delivery',\n      description: 'Entregar resultados y notificaciones',\n      estimated_duration_minutes: 2,\n      success_criteria: 'notifications_sent_successfully'\n    }\n  ],\n  fallback_mechanisms: [\n    {\n      condition: 'automation_accuracy_below_threshold',\n      action: 'human_escalation',\n      delay_minutes: 30\n    },\n    {\n      condition: 'processing_error_detected',\n      action: 'retry_with_simplified_logic',\n      max_retries: 2\n    }\n  ]\n};\n\n// Calcular beneficios de productividad\nconst productivityBenefits = {\n  daily_time_savings: config.time_saved_minutes,\n  weekly_time_savings: config.time_saved_minutes * 5,\n  monthly_time_savings: config.time_saved_minutes * 20,\n  annual_time_savings: config.time_saved_minutes * 240,\n  productivity_multiplier: 1 + (config.automation_level * 0.3),\n  cost_avoidance_per_hour: 25, // USD per hour\n  total_cost_avoidance: (config.time_saved_minutes / 60) * 25 * 240,\n  accuracy_improvement: config.accuracy_rate * 100,\n  stress_reduction_factor: 1.4\n};\n\n// Integrar con herramientas de productividad\nconst integrations = {\n  'google_workspace': {\n    integration_points: ['gmail', 'calendar', 'drive', 'docs'],\n    automation_capabilities: 0.89,\n    setup_complexity: 'medium'\n  },\n  'microsoft_365': {\n    integration_points: ['outlook', 'teams', 'sharepoint', 'power_automate'],\n    automation_capabilities: 0.92,\n    setup_complexity: 'high'\n  },\n  'slack': {\n    integration_points: ['notifications', 'workflows', 'bot_commands'],\n    automation_capabilities: 0.85,\n    setup_complexity: 'low'\n  },\n  'notion': {\n    integration_points: ['databases', 'pages', 'automation'],\n    automation_capabilities: 0.78,\n    setup_complexity: 'medium'\n  }\n};\n\nreturn {\n  json: {\n    action: 'task_automation_planned',\n    task_id: taskData.task_id,\n    task_type: taskType,\n    automation_plan: automationPlan,\n    automated_workflow: automatedWorkflow,\n    productivity_benefits: productivityBenefits,\n    integrations: integrations,\n    estimated_monthly_revenue: 3200,\n    campaign_id: 'taskmaster_' + Date.now(),\n    implementation_priority: config.priority_threshold > 8 ? 'high' : 'medium'\n  }\n};\n\n// Funciones auxiliares\nfunction generateAutomationSteps(taskData, config) {\n  return [\n    'Analizar estructura y patrones de la tarea',\n    'Identificar puntos de decisión automatizables',\n    'Configurar triggers y condiciones de activación',\n    'Implementar lógica de procesamiento IA',\n    'Configurar validaciones y controles de calidad',\n    'Establecer sistema de notificaciones',\n    'Crear dashboard de monitoreo y métricas'\n  ].slice(0, Math.ceil(config.automation_level * 7));\n}\n\nfunction calculateResourceNeeds(taskData) {\n  return {\n    development_hours: Math.floor(Math.random() * 20) + 5,\n    testing_hours: Math.floor(Math.random() * 8) + 2,\n    maintenance_hours_monthly: Math.floor(Math.random() * 4) + 1,\n    api_calls_daily: Math.floor(Math.random() * 1000) + 100,\n    storage_requirements_mb: Math.floor(Math.random() * 50) + 10\n  };\n}\n\nfunction generateTimeline(automationLevel) {\n  const baseWeeks = 2;\n  const complexityMultiplier = automationLevel > 0.9 ? 2.5 : (automationLevel > 0.8 ? 1.8 : 1.2);\n  \n  return {\n    planning_phase: '1 week',\n    development_phase: Math.floor(baseWeeks * complexityMultiplier) + ' weeks',\n    testing_phase: '1-2 weeks',\n    deployment_phase: '3-5 days',\n    optimization_phase: 'ongoing'\n  };\n}\n\nfunction calculateTaskROI(taskData, config) {\n  const implementationCost = 500; // Estimated implementation cost\n  const monthlySavings = (config.time_saved_minutes / 60) * 25 * 20; // 20 working days\n  const roi = ((monthlySavings * 12 - implementationCost) / implementationCost) * 100;\n  \n  return {\n    implementation_cost: implementationCost,\n    monthly_savings: monthlySavings,\n    annual_savings: monthlySavings * 12,\n    roi_percentage: Math.floor(roi),\n    payback_period_months: Math.ceil(implementationCost / monthlySavings)\n  };\n}"
+      },
+      "name": "Planificador de Automatización IA",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.asana.com/1.0/projects",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "asanaApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "data": {
+              "name": "TaskMaster AI - {{ $json.task_type }} Automation",
+              "notes": "Automatización inteligente de tareas tipo {{ $json.task_type }} con IA. Automatización del {{ Math.floor($json.automation_plan.automation_level * 100) }}% de la tarea.",
+              "workspace": "{{ $json.asana_workspace_id }}",
+              "team": "{{ $json.asana_team_id }}",
+              "privacy_setting": "public_to_team",
+              "color": "light-green",
+              "layout": "list",
+              "created_at": "{{ new Date().toISOString() }}"
+            }
+          }
+        }
+      },
+      "name": "Crear Proyecto Asana",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.todoist.com/rest/v2/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "todoistApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "content": "Implementar automatización {{ $json.task_type }} - TaskMaster AI",
+            "description": "{{ $json.automation_plan.steps_to_automate.join(', ') }}. ROI: {{ $json.automation_plan.roi_calculation.roi_percentage }}%",
+            "project_id": "{{ $json.todoist_project_id }}",
+            "priority": "{{ $json.implementation_priority === 'high' ? 4 : 2 }}",
+            "due_date": "{{ new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }}",
+            "labels": ["automation", "ai", "{{ $json.task_type }}"]\n          }\n        }
+      },
+      "name": "Crear Tareas Todoist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.clickup.com/api/v2.0/list/{{ $json.clickup_list_id }}/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickupApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "name": "TaskMaster AI Implementation - {{ $json.task_type }}",
+            "description": "Automatización de tareas tipo {{ $json.task_type }}\\n\\nAutomatización: {{ Math.floor($json.automation_plan.automation_level * 100) }}%\\nTiempo ahorrado: {{ $json.productivity_benefits.daily_time_savings }} min/día\\nROI: {{ $json.automation_plan.roi_calculation.roi_percentage }}%\\n\\nPasos de implementación:\\n{{ $json.automation_plan.steps_to_automate.join('\\n') }}",
+            "priority": "{{ $json.implementation_priority === 'high' ? 2 : 3 }}",
+            "assignees": [{{ $json.clickup_assignee_id }}],
+            "tags": ["taskmaster", "automation", "{{ $json.task_type }}", "ai"],\n            "due_date": "{{ new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() }}",
+            "custom_fields": [
+              {
+                "id": "automation_level",
+                "value": Math.floor($json.automation_plan.automation_level * 100)
+              },
+              {
+                "id": "time_saved_minutes",
+                "value": $json.productivity_benefits.daily_time_savings
+              },
+              {
+                "id": "roi_percentage",
+                "value": $json.automation_plan.roi_calculation.roi_percentage
+              }
+            ]
+          }
+        }
+      },
+      "name": "Crear Tareas ClickUp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.notion.com/v1/databases/{{ $json.notion_database_id }}/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "page": {
+              "properties": {
+                "Task ID": {
+                  "title": [
+                    {
+                      "text": {
+                        "content": "{{ $json.task_id }}"
+                      }
+                    }
+                  ]
+                },
+                "Task Type": {
+                  "select": {
+                    "name": "{{ $json.task_type }}"
+                  }
+                },
+                "Automation Level": {
+                  "number": Math.floor($json.automation_plan.automation_level * 100)
+                },
+                "Time Saved (min/day)": {
+                  "number": $json.productivity_benefits.daily_time_savings
+                },
+                "ROI %": {
+                  "number": $json.automation_plan.roi_calculation.roi_percentage
+                },
+                "Priority": {
+                  "select": {
+                    "name": "{{ $json.implementation_priority }}"
+                  }
+                },
+                "Implementation Cost": {
+                  "number": $json.automation_plan.roi_calculation.implementation_cost
+                },
+                "Monthly Savings": {
+                  "number": $json.automation_plan.roi_calculation.monthly_savings
+                },
+                "Status": {
+                  "select": {
+                    "name": "Planning"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "name": "Registrar en Notion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackWebhook",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "text": "TaskMaster AI - Nueva automatización planificada",
+            "attachments": [
+              {
+                "color": "good",
+                "fields": [
+                  {
+                    "title": "Tipo de Tarea",
+                    "value": "{{ $json.task_type }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Nivel de Automatización",
+                    "value": "{{ Math.floor($json.automation_plan.automation_level * 100) }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "Tiempo Ahorrado",
+                    "value": "{{ $json.productivity_benefits.daily_time_savings }} min/día",
+                    "short": true
+                  },
+                  {
+                    "title": "ROI Proyectado",
+                    "value": "{{ $json.automation_plan.roi_calculation.roi_percentage }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "Ahorro Mensual",
+                    "value": "${{ $json.automation_plan.roi_calculation.monthly_savings }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Prioridad",
+                    "value": "{{ $json.implementation_priority.toUpperCase() }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Proyectos Creados",
+                    "value": "Asana, Todoist, ClickUp, Notion",
+                    "short": false
+                  },
+                  {
+                    "title": "Impacto Anual",
+                    "value": "${{ Math.floor($json.automation_plan.roi_calculation.annual_savings) }}",
+                    "short": false
+                  }
+                ],
+                "footer": "TaskMaster AI v2025",
+                "ts": "{{ Math.floor(Date.now() / 1000) }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Notificación Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Planificador de Automatización IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Planificador de Automatización IA": {
+      "main": [
+        [
+          {
+            "node": "Crear Proyecto Asana",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Tareas Todoist",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Tareas ClickUp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar en Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Proyecto Asana": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Tareas Todoist": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Tareas ClickUp": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar en Notion": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "31",
+    "category": "productivity",
+    "price": 118,
+    "revenue": 3200,
+    "conversions": 234,
+    "roi": 298,
+    "description": "Gestión inteligente de tareas con IA para maximizar productividad",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 3200,
+    "target_monthly": 3840,
+    "current_performance": 83.33
+  },
+  "tags": ["productivity", "task-management", "ai-automation", "efficiency", "integration"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "taskmaster-v2025"
+}

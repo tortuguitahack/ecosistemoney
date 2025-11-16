@@ -1,0 +1,534 @@
+{
+  "name": "Audio Loops Bandcamp v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "cronExpression": "0 12,18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Schedule Audio Production",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate profitable audio loop concepts\nconst genres = [\n  { name: \"Lo-Fi Hip Hop\", demand_score: 95, avg_price: 15.99, target_audience: "producers_beats" },\n  { name: \"Ambient Techno\", demand_score: 88, avg_price: 18.99, target_audience: "electronic_artists" },\n  { name: \"Trap Drums\", demand_score: 92, avg_price: 12.99, target_audience: "hip_hop_producers" },\n  { name: \"Future Bass\", demand_score: 85, avg_price: 16.99, target_audience: "edm_producers" },\n  { name: "Synthwave", demand_score: 89, avg_price: 14.99, target_audience: "retro_producers" },\n  { name: "Cinematic Ambient", demand_score: 91, avg_price: 22.99, target_audience: "film_composers" }\n];\n\n// Select high-demand genre\nconst selectedGenres = genres\n  .sort((a, b) => b.demand_score - a.demand_score)\n  .slice(0, 3);\n\nconst productionBatches = selectedGenres.map((genre, index) => {\n  const loops_count = 8 + Math.floor(Math.random() * 5); // 8-12 loops\n  const total_revenue = loops_count * genre.avg_price;\n  \n  return {\n    batch_id: `AL_${Date.now()}_${index + 1}`,\n    genre: genre.name,\n    loops_count: loops_count,\n    avg_price: genre.avg_price,\n    target_audience: genre.target_audience,\n    demand_score: genre.demand_score,\n    estimated_revenue: total_revenue,\n    bpm_range: getBPMRange(genre.name),\n    key_signatures: getKeySignatures(genre.name),\n    royalty_free: true,\n    commercial_license: true\n  };\n});\n\nfunction getBPMRange(genre) {\n  const ranges = {\n    \"Lo-Fi Hip Hop\": \"70-90\",\n    \"Ambient Techno\": \"120-130\",\n    \"Trap Drums\": \"130-150\",\n    \"Future Bass\": \"140-150\",\n    \"Synthwave\": \"80-100\",\n    \"Cinematic Ambient\": \"60-80\"\n  };\n  return ranges[genre] || \"120-130\";\n}\n\nfunction getKeySignatures(genre) {\n  const keys = {\n    \"Lo-Fi Hip Hop\": [\"C minor\", \"F minor\", \"A minor\", \"D minor\"],\n    \"Ambient Techno\": [\"C major\", \"A minor\", \"F major\"],\n    \"Trap Drums\": [\"F minor\", \"C minor\", \"G minor\"],\n    \"Future Bass\": [\"C major\", \"F major\", \"G major\"],\n    \"Synthwave\": [\"A minor\", \"E minor\", \"D minor\"],\n    \"Cinematic Ambient\": [\"C major\", \"A minor\", \"F major\"]\n  };\n  return keys[genre] || [\"C major\", \"A minor\"];\n}\n\nreturn [{\n  json: {\n    production_batches: productionBatches,\n    total_loops: productionBatches.reduce((sum, b) => sum + b.loops_count, 0),\n    total_estimated_revenue: productionBatches.reduce((sum, b) => sum + b.estimated_revenue, 0),\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Generate Production Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $json.production_batches.map(batch => ({ role: 'user', content: `Generate ${batch.loops_count} unique loop concepts for ${batch.genre}. Each should include: title, description, key characteristics, mood, and production notes. BPM range: ${batch.bpm_range}. Keys: ${batch.key_signatures.join(', ')}. Return as JSON array.` })) }}"
+            },
+            {
+              "name": "temperature",
+              "value": "0.8"
+            },
+            {
+              "name": "max_tokens",
+              "value": "6000"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "AI Loop Concepts Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai_credentials",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.suno.com/v1/audio/generate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "sunoApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompts",
+              "value": "={{ JSON.stringify($json.loop_concepts) }}"
+            },
+            {
+              "name": "duration",
+              "value": "30"
+            },
+            {
+              "name": "quality",
+              "value": "high"
+            },
+            {
+              "name": "format",
+              "value": "wav"
+            }
+          ]
+        }
+      },
+      "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Generate Audio Loops",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "credentials": {
+        "sunoApi": {
+          "id": "suno_credentials",
+          "name": "Suno API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process generated audio loops and create metadata\nconst loop_concepts = JSON.parse($input.first().json.loop_concepts);\nconst production_batches = $('Generate Production Plan').first().json.production_batches;\n\nconst processedLoops = [];\nlet loopIndex = 0;\n\nfor (const batch of production_batches) {\n  const batchLoops = loop_concepts.filter((_, i) => i >= loopIndex && i < loopIndex + batch.loops_count);\n  \n  for (let i = 0; i < batchLoops.length; i++) {\n    const concept = batchLoops[i];\n    const loop = {\n      id: `loop_${Date.now()}_${loopIndex + i + 1}`,\n      title: concept.title,\n      description: concept.description,\n      genre: batch.genre,\n      bpm: getRandomBPM(batch.bpm_range),\n      key: batch.key_signatures[Math.floor(Math.random() * batch.key_signatures.length)],\n      duration: \"30 seconds\",\n      file_format: \"WAV\",\n      quality: \"24-bit\",\n      price: batch.avg_price,\n      tags: generateTags(concept, batch.genre),\n      mood: concept.mood,\n      commercial_license: true,\n      royalty_free: true,\n      bpm_range: batch.bpm_range,\n      batch_id: batch.batch_id,\n      target_audience: batch.target_audience\n    };\n    processedLoops.push(loop);\n  }\n  \n  loopIndex += batch.loops_count;\n}\n\nfunction getRandomBPM(bpm_range) {\n  const [min, max] = bpm_range.split('-').map(Number);\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nfunction generateTags(concept, genre) {\n  const base_tags = [genre.toLowerCase(), 'loop', 'beat'];\n  const concept_tags = concept.tags || [];\n  const mood_tags = concept.mood ? [concept.mood.toLowerCase()] : [];\n  \n  return [...new Set([...base_tags, ...concept_tags, ...mood_tags])];\n}\n\nreturn [{\n  json: {\n    loops: processedLoops,\n    total_loops: processedLoops.length,\n    total_value: processedLoops.reduce((sum, loop) => sum + loop.price, 0),\n    metadata_generated: true,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Process Loop Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.bandcamp.com/v2/upload/audio",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "bandcampApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tracks",
+              "value": "={{ JSON.stringify($json.loops) }}"
+            },
+            {
+              "name": "album_title",
+              "value": "Audio Loops Collection {{ new Date().getFullYear() }}"
+            },
+            {
+              "name": "album_description",
+              "value": "High-quality royalty-free audio loops for producers and artists. Perfect for commercial use."
+            },
+            {
+              "name": "price",
+              "value": "={{ $json.total_value }}"
+            },
+            {
+              "name": "tags",
+              "value": "audio-loops,royalty-free,beats,producer-tools"
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Upload to Bandcamp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300],
+      "credentials": {
+        "bandcampApi": {
+          "id": "bandcamp_credentials",
+          "name": "Bandcamp API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.content.delivery/audio/upload",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "cdnApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "audio_files",
+              "value": "={{ JSON.stringify($json.audio_file_urls) }}"
+            },
+            {
+              "name": "delivery_region",
+              "value": "global"
+            },
+            {
+              "name": "cdn_tier",
+              "value": "premium"
+            }
+          ]
+        }
+      },
+      "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "CDN Distribution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Check Upload Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "audio_loops_published"
+            },
+            {
+              "name": "loops_published",
+              "value": "={{ $json.loops.length }}"
+            },
+            {
+              "name": "total_value",
+              "value": "={{ $json.total_value }}"
+            },
+            {
+              "name": "genres",
+              "value": "={{ JSON.stringify([...new Set($json.loops.map(l => l.genre))]) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "completed"
+            }
+          ]
+        }
+      },
+      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "audio_loops_error"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $json.error }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "failed"
+            }
+          ]
+        }
+      },
+      "id": "d0e1f2a3-4b5c-6d7e-8f9a-0b1c2d3e4f5a",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.bandcamp.com/v2/analytics/sales",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "bandcampApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "timeframe",
+              "value": "24h"
+            },
+            {
+              "name": "metrics",
+              "value": "downloads,revenue,conversion_rate"
+            }
+          ]
+        }
+      },
+      "id": "e1f2a3b4-5c6d-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Track Sales Performance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "audio_loops_sales_update"
+            },
+            {
+              "name": "sales_data",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "sales_tracked"
+            }
+          ]
+        }
+      },
+      "id": "f2a3b4c5-6d7e-8f9a-0b1c-2d3e4f5a6b7c",
+      "name": "Update Sales Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Audio Production": {
+      "main": [
+        [
+          {
+            "node": "Generate Production Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Production Plan": {
+      "main": [
+        [
+          {
+            "node": "AI Loop Concepts Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Loop Concepts Generator": {
+      "main": [
+        [
+          {
+            "node": "Generate Audio Loops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Audio Loops": {
+      "main": [
+        [
+          {
+            "node": "Process Loop Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Loop Metadata": {
+      "main": [
+        [
+          {
+            "node": "Upload to Bandcamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Bandcamp": {
+      "main": [
+        [
+          {
+            "node": "CDN Distribution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CDN Distribution": {
+      "main": [
+        [
+          {
+            "node": "Check Upload Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Upload Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Track Sales Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Sales Performance": {
+      "main": [
+        [
+          {
+            "node": "Update Sales Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "id": "error_workflow_id"
+    }
+  },
+  "staticData": {
+    "estimated_monthly_revenue": 1850.75,
+    "genres": ["Lo-Fi Hip Hop", "Ambient Techno", "Trap Drums", "Future Bass", "Synthwave", "Cinematic Ambient"],
+    "success_rate": 0.91,
+    "avg_price_per_loop": 15.99,
+    "commercial_licenses": true,
+    "royalty_free": true,
+    "last_optimization": "2025-11-16T14:49:09Z"
+  },
+  "tags": [
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "audio-loops",
+      "name": "Audio Loops"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "bandcamp",
+      "name": "Bandcamp"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "royalty-free",
+      "name": "Royalty Free"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T14:49:09Z",
+  "versionId": "audio-loops-v2025-001"
+}

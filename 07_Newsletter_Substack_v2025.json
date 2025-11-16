@@ -1,0 +1,487 @@
+{
+  "name": "Newsletter Substack v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "cronExpression": "0 8 * * 1,3,5"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Schedule Newsletter Publishing",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate newsletter content strategy\nconst niches = [\n  {\n    name: \"AI & Automation\",\n    subscriber_value: 45.50,\n    conversion_rate: 0.12,\n    weekly_rate: 3,\n    revenue_sources: [\"premium_subscription\", \"affiliate_commissions\", \"course_sales\"],\n    target_audience: \"tech_entrepreneurs\",\n    content_frequency: \"high\"\n  },\n  {\n    name: \"Digital Marketing\",\n    subscriber_value: 38.75,\n    conversion_rate: 0.15,\n    weekly_rate: 3,\n    revenue_sources: [\"premium_subscription\", \"consulting\", \"tool_affiliates\"],\n    target_audience: \"marketing_professionals\",\n    content_frequency: \"high\"\n  },\n  {\n    name: \"Startup Insights\",\n    subscriber_value: 52.00,\n    conversion_rate: 0.08,\n    weekly_rate: 2,\n    revenue_sources: [\"premium_subscription\", \"event_sales\", \"investment_opportunities\"],\n    target_audience: \"founders_investors\",\n    content_frequency: \"medium\"\n  },\n  {\n    name: \"Crypto & DeFi\",\n    subscriber_value: 67.25,\n    conversion_rate: 0.18,\n    weekly_rate: 4,\n    revenue_sources: [\"premium_subscription\", \"trading_signals\", \"defi_recommendations\"],\n    target_audience: "crypto_traders",\n    content_frequency: \"high\"\n  }\n];\n\n// Select high-value niche\nconst selectedNiche = niches.sort((a, b) => b.subscriber_value - a.subscriber_value)[0];\n\nconst newsletterTopics = [\n  \"Weekly Market Analysis\",\n  \"Industry Trend Predictions\", \n  \"Tool Reviews & Comparisons\",\n  \"Success Stories & Case Studies\",\n  \"Actionable Tips & Strategies\",\n  \"Exclusive Content Preview\"\n];\n\nconst contentStrategy = {\n  niche: selectedNiche.name,\n  target_audience: selectedNiche.target_audience,\n  weekly_frequency: selectedNiche.weekly_rate,\n  subscriber_value: selectedNiche.subscriber_value,\n  conversion_target: selectedNiche.conversion_rate,\n  revenue_sources: selectedNiche.revenue_sources,\n  topics: newsletterTopics,\n  content_pillars: [\n    \"Educational Value\",\n    \"Industry Insights\",\n    \"Practical Applications\",\n    \"Exclusive Resources\"\n  ],\n  estimated_monthly_revenue: selectedNiche.subscriber_value * 150 * selectedNiche.conversion_rate,\n  engagement_goals: {\n    open_rate: 0.35,\n    click_rate: 0.08,\n    conversion_rate: selectedNiche.conversion_rate,\n    unsubscribe_rate: 0.02\n  }\n};\n\nreturn [{\n  json: {\n    strategy: contentStrategy,\n    selected_niche: selectedNiche,\n    next_publication: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Generate Content Strategy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": "[{ \"role\": \"user\", \"content\": `Create a high-quality newsletter for ${$json.selected_niche.name}. Target audience: ${$json.selected_niche.target_audience}. Include: compelling headline, valuable insights, actionable tips, and a strong call-to-action. Format as HTML with engaging copy. Keep it professional but conversational.` }]"
+            },
+            {
+              "name": "temperature",
+              "value": "0.7"
+            },
+            {
+              "name": "max_tokens",
+              "value": "3000"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "AI Newsletter Writer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai_credentials",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process newsletter content and optimize for engagement\nconst newsletter_content = $input.first().json.choices[0].message.content;\nconst strategy = $('Generate Content Strategy').first().json.strategy;\n\n// Extract and enhance key elements\nconst enhanced_content = {\n  subject_line: generateEngagingSubject(strategy.niche),\n  preview_text: generatePreviewText(newsletter_content),\n  main_content: newsletter_content,\n  call_to_action: generateCTA(strategy.revenue_sources),\n  social_proof: generateSocialProof(),\n  personalization_tags: {\n    \"{{audience}}\": strategy.target_audience,\n    \"{{niche}}\": strategy.niche,\n    \"{{value_prop}}\": generateValueProp(strategy.niche)\n  },\n  engagement_metrics: {\n    estimated_open_rate: strategy.engagement_goals.open_rate,\n    estimated_click_rate: strategy.engagement_goals.click_rate,\n    conversion_potential: strategy.engagement_goals.conversion_rate\n  },\n  monetization_elements: {\n    affiliate_links: generateAffiliateLinks(strategy.niche),\n    subscription_cta: generateSubscriptionCTA(),\n    lead_magnets: generateLeadMagnets(strategy.niche)\n  }\n};\n\nfunction generateEngagingSubject(niche) {\n  const templates = {\n    \"AI & Automation\": [\n      \"🤖 The AI revolution is here - Here's what you missed this week\",\n      \"🚀 Automate your business with these 5 AI tools (Step-by-step)\",\n      \"💰 AI is creating millionaires - Here's how to join them\"\n    ],\n    \"Digital Marketing\": [\n      \"📈 3 marketing secrets the pros don't want you to know\",\n      \"🔥 Your competitor's traffic formulas revealed\",\n      \"💡 Simple marketing trick that 10x'd my revenue\"\n    ],\n    \"Startup Insights\": [\n      \"💼 The startup mistake that's costing you $100K+\",\n      \"🎯 VC insider: What they're really looking for in 2025\",\n      \"⚡ Why your startup is failing (Hint: It's not what you think)\"\n    ],\n    \"Crypto & DeFi\": [\n      \"💰 DeFi yields hitting 20%+ - Where to put your money\",\n      \"📊 Crypto market analysis: 3 coins with 10x potential\",\n      \"🔐 DeFi security secrets that could save your portfolio\"\n    ]\n  };\n  \n  const niche_templates = templates[niche] || templates[\"AI & Automation\"];\n  return niche_templates[Math.floor(Math.random() * niche_templates.length)];\n}\n\nfunction generatePreviewText(content) {\n  return content.substring(0, 100) + \"...\";\n}\n\nfunction generateCTA(revenue_sources) {\n  const ctas = {\n    \"premium_subscription\": \"🚀 Join 10,000+ entrepreneurs getting premium insights weekly\",\n    \"affiliate_commissions\": \"💎 Try these tools with my exclusive 50% discount\",\n    \"course_sales\": \"🎓 Master the strategies in my $997 course - Early bird pricing\",\n    \"consulting\": \"💼 Ready to 10x your results? Book a free strategy call\",\n    \"event_sales\": \"🎟️ Join our exclusive event - Limited spots available\",\n    \"trading_signals\": \"📈 Get my weekly crypto signals - 85% win rate\",\n    \"defi_recommendations\": \"💰 Earn 20%+ APY - My top DeFi picks this week\"\n  };\n  \n  return revenue_sources.map(source => ctas[source]).join(\"\\n\\n\");\n}\n\nfunction generateSocialProof() {\n  return \"⭐ 4.9/5 from 2,847 subscribers • Trusted by 500+ entrepreneurs\";\n}\n\nfunction generateValueProp(niche) {\n  const props = {\n    \"AI & Automation\": \"Get cutting-edge AI strategies that save you 20+ hours per week\",\n    \"Digital Marketing\": \"Proven marketing frameworks that generate consistent leads\",\n    \"Startup Insights\": \"Insider knowledge from VCs and successful founders\",\n    \"Crypto & DeFi\": \"Data-driven crypto analysis with 85% accuracy rate\"\n  };\n  \n  return props[niche] || \"Exclusive insights that give you the edge\";\n}\n\nfunction generateAffiliateLinks(niche) {\n  const links = {\n    \"AI & Automation\": [\n      \"https://affiliate.ai-tools.com/premium?utm_source=newsletter\",\n      \"https://affiliate.automation-platform.com/pro?utm_source=newsletter\"\n    ],\n    \"Digital Marketing\": [\n      \"https://affiliate.marketing-tool.com/analytics?utm_source=newsletter\",\n      \"https://affiliate.email-platform.com/pro?utm_source=newsletter\"\n    ],\n    \"Startup Insights\": [\n      \"https://affiliate.analytics-platform.com/startup?utm_source=newsletter\",\n      \"https://affiliate.lead-generation.com/pro?utm_source=newsletter\"\n    ],\n    \"Crypto & DeFi\": [\n      \"https://affiliate.defi-platform.com/earnings?utm_source=newsletter\",\n      \"https://affiliate.trading-platform.com/signals?utm_source=newsletter\"\n    ]\n  };\n  \n  return links[niche] || [];\n}\n\nfunction generateSubscriptionCTA() {\n  return {\n    free_tier: \"Subscribe to our free newsletter\",\n    premium_tier: \"Upgrade to Premium ($97/month) for exclusive insights\",\n    annual_discount: \"Get 20% off annual premium subscription\"\n  };\n}\n\nfunction generateLeadMagnets(niche) {\n  const magnets = {\n    \"AI & Automation\": [\n      \"Ultimate AI Tool Stack Checklist (PDF)\",\n      \"Automation Workflow Templates\"\n    ],\n    \"Digital Marketing\": [\n      \"Marketing Funnel Blueprint\",\n      \"High-Converting Email Templates\"\n    ],\n    \"Startup Insights\": [\n      \"VC Pitch Deck Template\",\n      \"Startup Metrics Calculator\"\n    ],\n    \"Crypto & DeFi\": [\n      \"DeFi Strategy Guide\",\n      \"Crypto Portfolio Tracker\"\n    ]\n  };\n  \n  return magnets[niche] || [\"Exclusive Resource Pack\"];\n}\n\nreturn [{\n  json: enhanced_content\n}];"
+      },
+      "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Enhance Newsletter Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.substack.com/v1/newsletters",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "substackApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "{{ $json.subject_line }}"
+            },
+            {
+              "name": "content",
+              "value": "{{ $json.main_content }}"
+            },
+            {
+              "name": "preview_text",
+              "value": "{{ $json.preview_text }}"
+            },
+            {
+              "name": "publish_immediately",
+              "value": "true"
+            },
+            {
+              "name": "send_email",
+              "value": "true"
+            },
+            {
+              "name": "tags",
+              "value": "business,entrepreneurship,{{ $('Generate Content Strategy').first().strategy.niche.toLowerCase().replace(/\\s+/g, '-') }}"
+            }
+          ]
+        }
+      },
+      "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Publish to Substack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "substack_credentials",
+          "name": "Substack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.analytics.com/newsletter/track",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "analyticsApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "newsletter_id",
+              "value": "{{ $json.newsletter_id }}"
+            },
+            {
+              "name": "sent_to",
+              "value": "{{ $json.subscriber_count }}"
+            },
+            {
+              "name": "content_type",
+              "value": "{{ $('Generate Content Strategy').first().strategy.niche }}"
+            },
+            {
+              "name": "estimated_reach",
+              "value": "={{ $('Generate Content Strategy').first().strategy.estimated_monthly_revenue }}"
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Track Newsletter Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "published",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Check Publication Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "newsletter_published"
+            },
+            {
+              "name": "niche",
+              "value": "={{ $('Generate Content Strategy').first().strategy.niche }}"
+            },
+            {
+              "name": "subject_line",
+              "value": "={{ $('Enhance Newsletter Content').first().json.subject_line }}"
+            },
+            {
+              "name": "estimated_reach",
+              "value": "={{ $('Generate Content Strategy').first().json.strategy.estimated_monthly_revenue }}"
+            },
+            {
+              "name": "subscriber_count",
+              "value": "={{ $json.subscriber_count || 150 }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "completed"
+            }
+          ]
+        }
+      },
+      "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "newsletter_publish_error"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $json.error }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "failed"
+            }
+          ]
+        }
+      },
+      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.substack.com/v1/newsletter/{{ $json.newsletter_id }}/analytics",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "substackApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "timeframe",
+              "value": "24h"
+            },
+            {
+              "name": "metrics",
+              "value": "open_rate,click_rate,unsubscribe_rate,revenue"
+            }
+          ]
+        }
+      },
+      "id": "d0e1f2a3-4b5c-6d7e-8f9a-0b1c2d3e4f5a",
+      "name": "Collect Performance Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "newsletter_performance_update"
+            },
+            {
+              "name": "performance_data",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "performance_analyzed"
+            }
+          ]
+        }
+      },
+      "id": "e1f2a3b4-5c6d-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Update Performance Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Newsletter Publishing": {
+      "main": [
+        [
+          {
+            "node": "Generate Content Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content Strategy": {
+      "main": [
+        [
+          {
+            "node": "AI Newsletter Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Newsletter Writer": {
+      "main": [
+        [
+          {
+            "node": "Enhance Newsletter Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhance Newsletter Content": {
+      "main": [
+        [
+          {
+            "node": "Publish to Substack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Substack": {
+      "main": [
+        [
+          {
+            "node": "Track Newsletter Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Newsletter Metrics": {
+      "main": [
+        [
+          {
+            "node": "Check Publication Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Publication Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Collect Performance Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Performance Data": {
+      "main": [
+        [
+          {
+            "node": "Update Performance Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "id": "error_workflow_id"
+    }
+  },
+  "staticData": {
+    "estimated_monthly_revenue": 2875.50,
+    "niches": ["AI & Automation", "Digital Marketing", "Startup Insights", "Crypto & DeFi"],
+    "success_rate": 0.87,
+    "avg_open_rate": 0.35,
+    "avg_click_rate": 0.08,
+    "conversion_rate": 0.12,
+    "last_optimization": "2025-11-16T14:49:09Z"
+  },
+  "tags": [
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "newsletter",
+      "name": "Newsletter"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "substack",
+      "name": "Substack"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "content-automation",
+      "name": "Content Automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T14:49:09Z",
+  "versionId": "newsletter-substack-v2025-001"
+}

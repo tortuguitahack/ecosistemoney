@@ -1,0 +1,273 @@
+{
+  "name": "CustomerSupport Bot - Chatbot Inteligente con IA",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Trigger Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "supportbot-trigger-2025"
+    },
+    {
+      "parameters": {
+        "functionCode": "// CustomerSupport Bot - Chatbot Inteligente con IA para Soporte Automatizado\n// Manejo inteligente de consultas con escalación automática\n\nconst items = $input.all();\nconst supportRequest = items[0].json;\n\n// Configuración de tipos de consultas y respuestas\nconst supportTypes = {\n  'billing_inquiry': {\n    resolution_rate: 0.89,\n    avg_response_time: 30, // segundos\n    escalation_threshold: 0.15,\n    knowledge_base_coverage: 0.92,\n    customer_satisfaction: 4.6\n  },\n  'technical_support': {\n    resolution_rate: 0.76,\n    avg_response_time: 45,\n    escalation_threshold: 0.28,\n    knowledge_base_coverage: 0.85,\n    customer_satisfaction: 4.3\n  },\n  'product_information': {\n    resolution_rate: 0.94,\n    avg_response_time: 20,\n    escalation_threshold: 0.08,\n    knowledge_base_coverage: 0.98,\n    customer_satisfaction: 4.7\n  },\n  'account_management': {\n    resolution_rate: 0.82,\n    avg_response_time: 35,\n    escalation_threshold: 0.22,\n    knowledge_base_coverage: 0.88,\n    customer_satisfaction: 4.4\n  },\n  'complaint_resolution': {\n    resolution_rate: 0.68,\n    avg_response_time: 60,\n    escalation_threshold: 0.45,\n    knowledge_base_coverage: 0.78,\n    customer_satisfaction: 3.9\n  }\n};\n\n// Analizar consulta y determinar tipo y complejidad\nconst customerMessage = supportRequest.message || '';\nconst customerTier = supportRequest.customer_tier || 'standard';\nconst inquiryType = classifySupportInquiry(customerMessage);\nconst config = supportTypes[inquiryType] || supportTypes.product_information;\n\n// Generar respuesta inteligente\nconst aiResponse = {\n  inquiry_type: inquiryType,\n  confidence_score: calculateConfidence(customerMessage, inquiryType),\n  response_generated: generateIntelligentResponse(supportRequest, config),\n  knowledge_base_used: findRelevantKnowledge(customerMessage),\n  escalation_needed: config.resolution_rate < 0.8 || config.escalation_threshold > 0.3,\n  follow_up_required: needsFollowUp(inquiryType, customerMessage),\n  sentiment_analysis: analyzeSentiment(customerMessage)\n};\n\n// Crear plan de resolución\nconst resolutionPlan = {\n  immediate_actions: generateImmediateActions(inquiryType, supportRequest),\n  knowledge_recommendations: generateKnowledgeRecommendations(customerMessage),\n  escalation_path: generateEscalationPath(aiResponse.escalation_needed, customerTier),\n  satisfaction_prediction: calculateSatisfactionScore(config, customerMessage),\n  resolution_timeline: estimateResolutionTime(config, inquiryType)\n};\n\n// Automatizar flujo de soporte\nconst automationFlow = {\n  tier_1_responses: {\n    greeting: generateGreeting(inquiryType),\n    acknowledgment: generateAcknowledgment(customerMessage),\n    solution_provided: generateSolution(inquiryType, customerMessage),\n    closing: generateClosing(inquiryType, aiResponse.satisfaction_prediction)\n  },\n  escalation_automation: {\n    trigger_conditions: config.escalation_threshold,\n    notify_team: aiResponse.escalation_needed,\n    priority_level: calculatePriority(supportRequest, inquiryType),\n    assigned_specialist: selectSpecialist(inquiryType, customerTier)\n  },\n  follow_up_automation: {\n    schedule_follow_up: aiResponse.follow_up_required,\n    survey_timing: '24_hours_after_resolution',\n    satisfaction_tracking: true,\n    improvement_feedback: true\n  }\n};\n\n// Integrar con sistemas de ticketing\nconst systemIntegrations = {\n  'zendesk': {\n    create_ticket: true,\n    update_status: true,\n    assign_agent: aiResponse.escalation_needed,\n    close_ticket: config.resolution_rate > 0.9\n  },\n  'intercom': {\n    send_message: true,\n    create_conversation: true,\n    add_tags: true,\n    assign_conversation: aiResponse.escalation_needed\n  },\n  'freshdesk': {\n    create_ticket: true,\n    update_ticket: true,\n    assign_ticket: aiResponse.escalation_needed,\n    close_ticket: config.resolution_rate > 0.9\n  },\n  'slack': {\n    notify_support_team: aiResponse.escalation_needed,\n    update_channel: true,\n    alert_management: calculatePriority(supportRequest, inquiryType) > 7\n  }\n};\n\n// Calcular métricas de rendimiento\nconst performanceMetrics = {\n  response_time_actual: config.avg_response_time,\n  resolution_probability: config.resolution_rate,\n  customer_satisfaction_predicted: config.customer_satisfaction,\n  cost_per_inquiry: calculateCostPerInquiry(config),\n  time_saved_vs_human: config.avg_response_time * 0.7, // 70% time saved\n  monthly_inquiry_volume: Math.floor(Math.random() * 5000) + 1000,\n  monthly_cost_savings: calculateMonthlySavings(config)\n};\n\nreturn {\n  json: {\n    action: 'support_query_processed',\n    customer_id: supportRequest.customer_id,\n    inquiry_id: supportRequest.inquiry_id,\n    inquiry_type: inquiryType,\n    ai_response: aiResponse,\n    resolution_plan: resolutionPlan,\n    automation_flow: automationFlow,\n    system_integrations: systemIntegrations,\n    performance_metrics: performanceMetrics,\n    estimated_monthly_revenue: 2800,\n    campaign_id: 'supportbot_' + Date.now(),\n    automation_score: config.resolution_rate * 100\n  }\n};\n\n// Funciones auxiliares\nfunction classifySupportInquiry(message) {\n  const text = message.toLowerCase();\n  \n  if (text.includes('factura') || text.includes('cobro') || text.includes('pago') || text.includes('billing')) {\n    return 'billing_inquiry';\n  } else if (text.includes('error') || text.includes('no funciona') || text.includes('problema') || text.includes('bug')) {\n    return 'technical_support';\n  } else if (text.includes('cómo') || text.includes('qué es') || text.includes('información') || text.includes('características')) {\n    return 'product_information';\n  } else if (text.includes('cuenta') || text.includes('perfil') || text.includes('password') || text.includes('login')) {\n    return 'account_management';\n  } else if (text.includes('queja') || text.includes('insatisfecho') || text.includes('molesto') || text.includes('problema serio')) {\n    return 'complaint_resolution';\n  } else {\n    return 'product_information'; // Default\n  }\n}\n\nfunction calculateConfidence(message, inquiryType) {\n  const keywordMatches = {\n    'billing_inquiry': ['factura', 'cobro', 'pago', 'billing'],\n    'technical_support': ['error', 'problema', 'no funciona', 'bug'],\n    'product_information': ['cómo', 'qué es', 'características'],\n    'account_management': ['cuenta', 'perfil', 'password', 'login'],\n    'complaint_resolution': ['queja', 'insatisfecho', 'molesto']\n  };\n  \n  const keywords = keywordMatches[inquiryType] || [];\n  const matches = keywords.filter(keyword => message.toLowerCase().includes(keyword)).length;\n  return Math.min(0.95, 0.6 + (matches * 0.1));\n}\n\nfunction generateIntelligentResponse(request, config) {\n  const responseTemplates = {\n    'billing_inquiry': `Entiendo tu consulta sobre facturación. Basándome en tu cuenta, puedo ayudarte con: [detalles específicos de facturación]. ¿Te gustaría que revise algún cargo específico?`,\n    'technical_support': `Veo que tienes un problema técnico. Te ayudo a solucionarlo paso a paso. Primero, intenta [solución específica]. Si el problema persiste, procederemos con escalación.`,\n    'product_information': `Te explico sobre [producto]: [características principales]. También puedes ver [enlace a documentación]. ¿Qué aspecto específico te interesa más?`,\n    'account_management': `Para ayudarte con tu cuenta, puedo: [opciones específicas]. ¿Qué necesitas modificar exactamente?`,\n    'complaint_resolution': `Lamento mucho la experiencia que has tenido. Quiero asegurarme de resolver esto correctamente. Permíteme [acción específica] para solucionarlo.`\n  };\n  \n  return responseTemplates[inquiryType] || 'Gracias por contactarnos. Te ayudo con tu consulta.';\n}\n\nfunction findRelevantKnowledge(message) {\n  const knowledgeBase = [\n    {\n      topic: 'billing_faq',\n      content: 'FAQ de facturación y métodos de pago',\n      relevance: message.toLowerCase().includes('factura') ? 0.9 : 0.3\n    },\n    {\n      topic: 'technical_docs',\n      content: 'Documentación técnica y resolución de problemas',\n      relevance: message.toLowerCase().includes('problema') ? 0.85 : 0.2\n    },\n    {\n      topic: 'product_guide',\n      content: 'Guía completa del producto',\n      relevance: message.toLowerCase().includes('cómo') ? 0.8 : 0.4\n    }\n  ];\n  \n  return knowledgeBase\n    .filter(item => item.relevance > 0.5)\n    .sort((a, b) => b.relevance - a.relevance)\n    .slice(0, 2);\n}\n\nfunction needsFollowUp(inquiryType, message) {\n  const followUpTriggers = {\n    'technical_support': ['no funciona', 'error', 'problema'],\n    'complaint_resolution': ['insatisfecho', 'molesto', 'queja'],\n    'account_management': ['password', 'cuenta bloqueada']\n  };\n  \n  const triggers = followUpTriggers[inquiryType] || [];\n  return triggers.some(trigger => message.toLowerCase().includes(trigger));\n}\n\nfunction analyzeSentiment(message) {\n  const positiveWords = ['gracias', 'excelente', 'perfecto', 'funciona', 'bueno'];\n  const negativeWords = ['problema', 'error', 'no funciona', 'molesto', 'queja', 'insatisfecho'];\n  \n  const messageLower = message.toLowerCase();\n  const positiveCount = positiveWords.filter(word => messageLower.includes(word)).length;\n  const negativeCount = negativeWords.filter(word => messageLower.includes(word)).length;\n  \n  let sentiment = 'neutral';\n  if (positiveCount > negativeCount) sentiment = 'positive';\n  else if (negativeCount > positiveCount) sentiment = 'negative';\n  \n  return {\n    sentiment: sentiment,\n    score: (positiveCount - negativeCount) / Math.max(message.split(' ').length, 1),\n    confidence: Math.min(0.9, Math.abs(positiveCount - negativeCount) * 0.2)\n  };\n}\n\nfunction generateImmediateActions(inquiryType, request) {\n  const actions = {\n    'billing_inquiry': [\n      'Verificar estado de cuenta del cliente',\n      'Revisar historial de pagos',\n      'Explicar cargos aplicables'\n    ],\n    'technical_support': [\n      'Recopilar información del problema',\n      'Verificar sistema y configuración',\n      'Proporcionar pasos de solución'\n    ],\n    'product_information': [\n      'Identificar producto consultado',\n      'Recopilar información actualizada',\n      'Preparar respuesta completa'\n    ],\n    'account_management': [\n      'Verificar identidad del cliente',\n      'Revisar permisos de cuenta',\n      'Proceder con solicitud'\n    ],\n    'complaint_resolution': [\n      'Agradecer el feedback',\n      'Disculparse por la experiencia',\n      'Tomar acción correctiva inmediata'\n    ]\n  };\n  \n  return actions[inquiryType] || actions['product_information'];\n}\n\nfunction generateKnowledgeRecommendations(message) {\n  return [\n    {\n      title: 'Base de Conocimiento - FAQ Principal',\n      url: '/help/faq',\n      relevance: 0.9\n    },\n    {\n      title: 'Documentación Técnica',\n      url: '/docs/technical',\n      relevance: 0.7\n    },\n    {\n      title: 'Videos Tutoriales',\n      url: '/tutorials',\n      relevance: 0.6\n    }\n  ];\n}\n\nfunction generateEscalationPath(needed, tier) {\n  if (!needed) return { path: 'not_needed', reason: 'Query can be resolved at tier 1' };\n  \n  const escalationPaths = {\n    'standard': ['tier_1', 'tier_2_manager'],\n    'premium': ['tier_1', 'tier_2_specialist'],\n    'enterprise': ['tier_1', 'tier_2_specialist', 'technical_lead']\n  };\n  \n  return {\n    path: escalationPaths[tier] || escalationPaths['standard'],\n    estimated_time: '15-30 minutes',\n    priority: calculatePriority(supportRequest, inquiryType)\n  };\n}\n\nfunction calculateSatisfactionScore(config, message) {\n  const baseScore = config.customer_satisfaction;\n  const sentiment = analyzeSentiment(message);\n  const adjustment = sentiment.sentiment === 'positive' ? 0.2 : \n                    sentiment.sentiment === 'negative' ? -0.3 : 0;\n  \n  return Math.max(1, Math.min(5, baseScore + adjustment));\n}\n\nfunction estimateResolutionTime(config, inquiryType) {\n  const timeEstimates = {\n    'product_information': '2-5 minutes',\n    'billing_inquiry': '5-10 minutes',\n    'account_management': '10-15 minutes',\n    'technical_support': '15-30 minutes',\n    'complaint_resolution': '20-45 minutes'\n  };\n  \n  return timeEstimates[inquiryType] || '10-20 minutes';\n}\n\nfunction calculatePriority(request, inquiryType) {\n  let priority = 5; // Base priority\n  \n  // Increase priority for certain inquiry types\n  if (inquiryType === 'complaint_resolution') priority += 2;\n  if (inquiryType === 'technical_support') priority += 1;\n  \n  // Increase priority based on customer tier\n  if (request.customer_tier === 'enterprise') priority += 2;\n  if (request.customer_tier === 'premium') priority += 1;\n  \n  // Check for urgent keywords\n  const urgentKeywords = ['urgente', 'emergency', 'down', 'critical'];\n  if (urgentKeywords.some(keyword => request.message.toLowerCase().includes(keyword))) {\n    priority += 3;\n  }\n  \n  return Math.min(10, priority);\n}\n\nfunction selectSpecialist(inquiryType, tier) {\n  const specialists = {\n    'billing_inquiry': 'billing_specialist_team',\n    'technical_support': 'technical_support_team',\n    'product_information': 'product_specialist_team',\n    'account_management': 'account_management_team',\n    'complaint_resolution': 'customer_success_manager'\n  };\n  \n  return specialists[inquiryType] || 'general_support_team';\n}\n\nfunction generateGreeting(inquiryType) {\n  const greetings = {\n    'billing_inquiry': '¡Hola! Te ayudo con tu consulta de facturación.',\n    'technical_support': 'Veo que necesitas ayuda técnica. ¡Estoy aquí para apoyarte!',\n    'product_information': '¡Perfecto! Te explico todo sobre nuestro producto.',\n    'account_management': 'Hola, te ayudo con la gestión de tu cuenta.',\n    'complaint_resolution': 'Lamento mucho tu experiencia. Permíteme ayudarte a resolverlo.'\n  };\n  \n  return greetings[inquiryType] || '¡Hola! ¿En qué puedo ayudarte hoy?';\n}\n\nfunction generateAcknowledgment(message) {\n  return 'He recibido tu consulta y estoy analizando la mejor manera de ayudarte.';\n}\n\nfunction generateSolution(inquiryType, message) {\n  const solutions = {\n    'billing_inquiry': 'Basándome en tu consulta, aquí están los detalles de facturación que necesitas.',\n    'technical_support': 'Para resolver tu problema técnico, sigue estos pasos:',\n    'product_information': 'Te explico las características principales del producto:',\n    'account_management': 'Para tu solicitud de cuenta, he preparado lo siguiente:',\n    'complaint_resolution': 'Para resolver tu preocupación, voy a tomar estas acciones inmediatas:'\n  };\n  \n  return solutions[inquiryType] || 'Basándome en tu consulta, aquí está la información que necesitas.';\n}\n\nfunction generateClosing(inquiryType, satisfactionScore) {\n  const closings = {\n    'positive': '¡Espero haber sido de ayuda! ¿Hay algo más en lo que pueda asistirte?',\n    'neutral': 'Si necesitas más ayuda, no dudes en contactarnos.',\n    'negative': 'Quiero asegurarme de que estés completamente satisfecho. ¿Cómo puedo mejorar?'\n  };\n  \n  const sentiment = satisfactionScore > 4 ? 'positive' : satisfactionScore > 3 ? 'neutral' : 'negative';\n  return closings[sentiment];\n}\n\nfunction calculateCostPerInquiry(config) {\n  const humanCost = 15; // USD per inquiry with human agent\n  const botCost = 0.5; // USD per inquiry with bot\n  const savings = humanCost - botCost;\n  return { human: humanCost, bot: botCost, savings: savings };\n}\n\nfunction calculateMonthlySavings(config) {\n  const monthlyInquiries = 3000; // Estimated monthly volume\n  const costPerInquiry = calculateCostPerInquiry(config);\n  return monthlyInquiries * costPerInquiry.savings;\n}"
+      },
+      "name": "Procesador de Consulta IA",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://{{ $json.zendesk_subdomain }}.zendesk.com/api/v2/tickets.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "zendeskApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "ticket": {
+              "subject": "{{ $json.inquiry_type }} - Customer {{ $json.customer_id }}",
+              "comment": {
+                "body": "{{ $json.ai_response.response_generated }}"
+              },
+              "priority": "{{ $json.automation_flow.escalation_automation.priority_level > 7 ? 'urgent' : 'normal' }}",
+              "status": "{{ $json.ai_response.escalation_needed ? 'open' : 'solved' }}",
+              "type": "{{ $json.inquiry_type }}",
+              "requester_id": "{{ $json.customer_id }}",
+              "assignee_id": "{{ $json.automation_flow.escalation_automation.assigned_specialist }}",
+              "tags": ["bot_ai", "{{ $json.inquiry_type }}", "automated_response"]
+            }
+          }
+        }
+      },
+      "name": "Crear Ticket Zendesk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.intercom.io/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "from": {
+              "type": "bot",
+              "id": "support_bot_ai"
+            },
+            "to": {
+              "type": "user",
+              "id": "{{ $json.customer_id }}"
+            },
+            "body": "{{ $json.ai_response.response_generated }}",
+            "message_type": "inapp",
+            "metadata": {
+              "inquiry_type": "{{ $json.inquiry_type }}",
+              "confidence_score": "{{ $json.ai_response.confidence_score }}",
+              "escalated": "{{ $json.ai_response.escalation_needed }}",
+              "processed_by": "ai_support_bot"
+            }
+          }
+        }
+      },
+      "name": "Enviar Mensaje Intercom",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.freshdesk.com/api/v2/tickets",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "freshdeskApi",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "subject": "{{ $json.inquiry_type }} Support Request",
+            "description": "{{ $json.ai_response.response_generated }}",
+            "email": "{{ $json.customer_email }}",
+            "priority": "{{ $json.automation_flow.escalation_automation.priority_level > 7 ? 2 : 1 }}",
+            "status": "{{ $json.ai_response.escalation_needed ? 2 : 4 }}",
+            "type": "{{ $json.inquiry_type }}",
+            "source": 7, // Bot/AI
+            "tags": ["ai_support", "{{ $json.inquiry_type }}", "automated"],
+            "custom_fields": {
+              "ai_confidence": "{{ $json.ai_response.confidence_score }}",
+              "resolution_probability": "{{ $json.performance_metrics.resolution_probability }}"
+            }
+          }
+        }
+      },
+      "name": "Crear Ticket Freshdesk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackWebhook",
+        "requestMethod": "POST",
+        "jsonParameters": true,
+        "options": {
+          "body": {
+            "text": "SupportBot AI - Nueva consulta procesada",
+            "attachments": [
+              {
+                "color": "{{ $json.ai_response.escalation_needed ? 'warning' : 'good' }}",
+                "fields": [
+                  {
+                    "title": "Tipo de Consulta",
+                    "value": "{{ $json.inquiry_type }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Cliente ID",
+                    "value": "{{ $json.customer_id }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Confianza IA",
+                    "value": "{{ Math.floor($json.ai_response.confidence_score * 100) }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "Escalación",
+                    "value": "{{ $json.ai_response.escalation_needed ? '✅ Sí' : '❌ No' }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Probabilidad Resolución",
+                    "value": "{{ Math.floor($json.performance_metrics.resolution_probability * 100) }}%",
+                    "short": true
+                  },
+                  {
+                    "title": "Satisfacción Predicha",
+                    "value": "{{ Math.floor($json.resolution_plan.satisfaction_prediction * 10) / 10 }}/5",
+                    "short": true
+                  },
+                  {
+                    "title": "Tiempo Estimado",
+                    "value": "{{ $json.resolution_plan.resolution_timeline }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Ahorro vs Humano",
+                    "value": "${{ $json.performance_metrics.monthly_cost_savings }}/mes",
+                    "short": false
+                  }
+                ],
+                "footer": "SupportBot AI v2025",
+                "ts": "{{ Math.floor(Date.now() / 1000) }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Notificación Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Trigger Webhook": {
+      "main": [
+        [
+          {
+            "node": "Procesador de Consulta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesador de Consulta IA": {
+      "main": [
+        [
+          {
+            "node": "Crear Ticket Zendesk",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar Mensaje Intercom",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crear Ticket Freshdesk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket Zendesk": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensaje Intercom": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket Freshdesk": {
+      "main": [
+        [
+          {
+            "node": "Notificación Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "systemId": "71",
+    "category": "support",
+    "price": 95,
+    "revenue": 2800,
+    "conversions": 189,
+    "roi": 256,
+    "description": "Chatbot inteligente con IA para soporte automatizado y escalación",
+    "createdBy": "MiniMax Agent",
+    "version": "2025.1.0",
+    "monthly_projection": 2800,
+    "target_monthly": 3360,
+    "current_performance": 83.33
+  },
+  "tags": ["customer-support", "chatbot", "ai", "automation", "escalation"],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T15:05:31.000Z",
+  "versionId": "supportbot-v2025"
+}

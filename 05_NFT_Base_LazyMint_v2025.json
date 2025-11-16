@@ -1,0 +1,533 @@
+{
+  "name": "NFT Base Lazy Mint v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "cronExpression": "0 10 * * 1,3,5"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Schedule NFT Drops",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate high-value NFT collection concepts for Base blockchain\nconst collections = [\n  {\n    name: \"AI Art Genesis\",\n    theme: \"AI-generated abstract art with unique algorithms\",\n    total_supply: 100,\n    mint_price: "0.05", // ETH on Base\n    royalty_percentage: 7.5,\n    target_market: "tech_art_collectors",\n    estimated_floor_price: "0.15", // Expected resale value\n    collection_revenue: 5.0 // 100 * 0.05\n  },\n  {\n    name: \"Metaverse Real Estate\",\n    theme: \"Virtual land parcels in premium metaverse locations\",\n    total_supply: 50,\n    mint_price: "0.08", // ETH on Base\n    royalty_percentage: 10,\n    target_market: "metaverse_investors",\n    estimated_floor_price: "0.25", // Expected resale value\n    collection_revenue: 4.0 // 50 * 0.08\n  },\n  {\n    name: \"Gaming Legends\",\n    theme: \"Rare in-game items and character skins\",\n    total_supply: 200,\n    mint_price: "0.03", // ETH on Base\n    royalty_percentage: 5,\n    target_market: "gaming_community",\n    estimated_floor_price: "0.12", // Expected resale value\n    collection_revenue: 6.0 // 200 * 0.03\n  }\n];\n\n// Select collection based on market analysis\nconst selectedCollection = collections[Math.floor(Math.random() * collections.length)];\nconst marketDemand = 0.78 + (Math.random() * 0.20); // 78-98% demand\nconst estimatedRevenue = selectedCollection.collection_revenue * marketDemand;\n\nreturn [{\n  json: {\n    collection: selectedCollection,\n    market_demand: marketDemand,\n    estimated_revenue: estimatedRevenue,\n    gas_optimization: {\n      chain: "base",\n      estimated_gas_cost: "0.002", // ETH\n      gas_efficiency_score: 92\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Generate Collection Concept",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": "[{ \"role\": \"user\", \"content\": `Create ${$json.collection.total_supply} unique NFT metadata objects for a ${$json.collection.name} collection with theme: ${$json.collection.theme}. Each NFT should have: title, description, attributes (rarity, power level, etc.), and image_prompt. Return as JSON array.` }]"
+            },
+            {
+              "name": "temperature",
+              "value": "0.9"
+            },
+            {
+              "name": "max_tokens",
+              "value": "8000"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "AI NFT Metadata Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai_credentials",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process AI-generated metadata and create IPFS-ready data\nconst metadata = JSON.parse($input.first().json.choices[0].message.content);\nconst collectionData = $('Generate Collection Concept').first().json.collection;\n\nconst nftTokens = metadata.map((item, index) => {\n  // Add rarity distribution\n  const rarity = Math.random();\n  let rarityLevel = 'common';\n  if (rarity > 0.9) rarityLevel = 'legendary';\n  else if (rarity > 0.7) rarityLevel = 'epic';\n  else if (rarity > 0.5) rarityLevel = 'rare';\n  else if (rarity > 0.3) rarityLevel = 'uncommon';\n\n  return {\n    token_id: index + 1,\n    name: item.title,\n    description: item.description,\n    attributes: [\n      ...item.attributes,\n      { trait_type: 'rarity', value: rarityLevel },\n      { trait_type: 'collection', value: collectionData.name },\n      { trait_type: 'chain', value: 'base' }\n    ],\n    image_prompt: item.image_prompt,\n    royalty_percentage: collectionData.royalty_percentage,\n    estimated_resale_value: collectionData.estimated_floor_price\n  };\n});\n\n// Calculate collection statistics\nconst rarityDistribution = nftTokens.reduce((acc, token) => {\n  const rarity = token.attributes.find(a => a.trait_type === 'rarity')?.value || 'common';\n  acc[rarity] = (acc[rarity] || 0) + 1;\n  return acc;\n}, {});\n\nreturn [{\n  json: {\n    nft_tokens: nftTokens,\n    collection_stats: {\n      total_supply: nftTokens.length,\n      rarity_distribution: rarityDistribution,\n      avg_resale_value: collectionData.estimated_floor_price,\n      royalty_revenue_potential: nftTokens.length * parseFloat(collectionData.estimated_floor_price) * 0.075\n    },\n    ipfs_config: {\n      gateway: "https://ipfs.io/ipfs/",\n      pinning_service: "pinata"\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Process NFT Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "pinataApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.collection_stats.name }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.collection_stats.description }}"
+            },
+            {
+              "name": "image",
+              "value": "generated_artwork_url"
+            },
+            {
+              "name": "attributes",
+              "value": "={{ JSON.stringify($json.collection_stats.attributes) }}"
+            },
+            {
+              "name": "pinataMetadata",
+              "value": "{\"name\": \"{{ $json.collection_stats.name }}\", \"keyvalues\": {\"collection\": \"{{ $json.collection_stats.name }}\", \"chain\": \"base\"}}"
+            }
+          ]
+        }
+      },
+      "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Upload to IPFS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300],
+      "credentials": {
+        "pinataApi": {
+          "id": "pinata_credentials",
+          "name": "Pinata API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.opensea.io/v2/contracts/base/0xYours/creates",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openseaApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.collection_stats.name }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.collection_stats.description }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $json.collection_stats.image }}"
+            },
+            {
+              "name": "external_url",
+              "value": "https://yoursite.com/collection/{{ $json.collection_stats.name }}"
+            },
+            {
+              "name": "royalty_percentage",
+              "value": "={{ $json.collection_stats.royalty_percentage }}"
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Create Collection on OpenSea",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300],
+      "credentials": {
+        "openseaApi": {
+          "id": "opensea_credentials",
+          "name": "OpenSea API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api-base.example.com/nft/lazy-mint",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "web3Provider",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "collection_name",
+              "value": "={{ $json.collection_stats.name }}"
+            },
+            {
+              "name": "tokens",
+              "value": "={{ JSON.stringify($json.nft_tokens) }}"
+            },
+            {
+              "name": "gas_optimization",
+              "value": "true"
+            },
+            {
+              "name": "lazy_mint",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Lazy Mint on Base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Check Mint Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "nft_collection_created"
+            },
+            {
+              "name": "collection_name",
+              "value": "={{ $('Generate Collection Concept').first().json.collection.name }}"
+            },
+            {
+              "name": "tokens_minted",
+              "value": "={{ $json.nft_tokens.length }}"
+            },
+            {
+              "name": "estimated_revenue",
+              "value": "={{ $('Generate Collection Concept').first().json.estimated_revenue }}"
+            },
+            {
+              "name": "blockchain",
+              "value": "base"
+            },
+            {
+              "name": "workflow_status",
+              "value": "completed"
+            }
+          ]
+        }
+      },
+      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "nft_mint_error"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $json.error }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "failed"
+            }
+          ]
+        }
+      },
+      "id": "d0e1f2a3-4b5c-6d7e-8f9a-0b1c2d3e4f5a",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.opensea.io/v2/collections/base/{{ $json.collection_name }}/stats",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openseaApi"
+      },
+      "id": "e1f2a3b4-5c6d-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Track Collection Performance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "nft_performance_update"
+            },
+            {
+              "name": "collection_stats",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "performance_tracked"
+            }
+          ]
+        }
+      },
+      "id": "f2a3b4c5-6d7e-8f9a-0b1c-2d3e4f5a6b7c",
+      "name": "Update Performance Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 200]
+    }
+  ],
+  "connections": {
+    "Schedule NFT Drops": {
+      "main": [
+        [
+          {
+            "node": "Generate Collection Concept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Collection Concept": {
+      "main": [
+        [
+          {
+            "node": "AI NFT Metadata Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI NFT Metadata Generator": {
+      "main": [
+        [
+          {
+            "node": "Process NFT Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process NFT Metadata": {
+      "main": [
+        [
+          {
+            "node": "Upload to IPFS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to IPFS": {
+      "main": [
+        [
+          {
+            "node": "Create Collection on OpenSea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Collection on OpenSea": {
+      "main": [
+        [
+          {
+            "node": "Lazy Mint on Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lazy Mint on Base": {
+      "main": [
+        [
+          {
+            "node": "Check Mint Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Mint Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Track Collection Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Collection Performance": {
+      "main": [
+        [
+          {
+            "node": "Update Performance Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "id": "error_workflow_id"
+    }
+  },
+  "staticData": {
+    "estimated_monthly_revenue": 4250.00,
+    "blockchain": "base",
+    "success_rate": 0.89,
+    "avg_gas_cost": "0.002",
+    "royalty_revenue": 15.75,
+    "floor_price_growth": 0.23,
+    "last_optimization": "2025-11-16T14:49:09Z"
+  },
+  "tags": [
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "nft-base",
+      "name": "NFT Base"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "lazy-mint",
+      "name": "Lazy Mint"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "ai-generated",
+      "name": "AI Generated"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T14:49:09Z",
+  "versionId": "nft-base-v2025-001"
+}

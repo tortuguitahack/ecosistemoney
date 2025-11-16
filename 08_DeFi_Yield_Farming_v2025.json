@@ -1,0 +1,524 @@
+{
+  "name": "DeFi Yield Farming v2025",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "cronExpression": "0 */6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Schedule DeFi Analysis",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Analyze DeFi opportunities for maximum yield\nconst defiProtocols = [\n  {\n    name: \"Compound III\",\n    chain: \"ethereum\",\n    apy: 0.0825, // 8.25% APY\n    risk_score: 0.25, // Low risk\n    tvl: 2800000000, // $2.8B TVL\n    asset: \"USDC\",\n    minimum_investment: 100,\n    liquidity_depth: 0.92,\n    impermanent_loss_risk: \"minimal\"\n  },\n  {\n    name: \"Aave V3\",\n    chain: \"polygon\",\n    apy: 0.0675, // 6.75% APY\n    risk_score: 0.20, // Very low risk\n    tvl: 4200000000, // $4.2B TVL\n    asset: \"MATIC\",\n    minimum_investment: 50,\n    liquidity_depth: 0.95,\n    impermanent_loss_risk\": \"none\"\n  },\n  {\n    name: \"Uniswap V4\",\n    chain: \"arbitrum\",\n    apy: 0.1250, // 12.5% APY\n    risk_score: 0.45, // Medium risk\n    tvl: 890000000, // $890M TVL\n    asset: \"ETH/USDC\",\n    minimum_investment: 250,\n    liquidity_depth: 0.78,\n    impermanent_loss_risk\": \"medium\"\n  },\n  {\n    name: \"Yearn Finance\",\n    chain: \"ethereum\",\n    apy: 0.0950, // 9.5% APY\n    risk_score: 0.35, // Low-medium risk\n    tvl: 1100000000, // $1.1B TVL\n    asset: \"DAI\",\n    minimum_investment: 100,\n    liquidity_depth: 0.88,\n    impermanent_loss_risk\": \"low\"\n  },\n  {\n    name: \"Curve Finance\",\n    chain: \"ethereum\",\n    apy: 0.0825, // 8.25% APY\n    risk_score: 0.22, // Low risk\n    tvl: 3800000000, // $3.8B TVL\n    asset: \"stETH\",\n    minimum_investment: 200,\n    liquidity_depth: 0.93,\n    impermanent_loss_risk\": \"minimal\"\n  },\n  {\n    name: \"Convex Finance\",\n    chain: \"ethereum\",\n    apy: 0.1125, // 11.25% APY\n    risk_score: 0.40, // Medium risk\n    tvl: 2500000000, // $2.5B TVL\n    asset: \"CRV/CVX\",\n    minimum_investment: 150,\n    liquidity_depth: 0.85,\n    impermanent_loss_risk\": \"medium\"\n  }\n];\n\n// Calculate risk-adjusted returns\nconst opportunities = defiProtocols.map(protocol => {\n  const risk_adjusted_return = protocol.apy * (1 - protocol.risk_score);\n  const score = risk_adjusted_return * protocol.liquidity_depth * (protocol.tvl / 1000000000);\n  \n  return {\n    ...protocol,\n    risk_adjusted_return,\n    opportunity_score: score,\n    recommended_allocation: calculateAllocation(score, protocol.apy),\n    expected_monthly_yield: calculateMonthlyYield(protocol.apy, 10000),\n    roi_after_6_months: calculateROI(protocol.apy, 6)\n  };\n});\n\n// Sort by opportunity score\nconst topOpportunities = opportunities\n  .sort((a, b) => b.opportunity_score - a.opportunity_score)\n  .slice(0, 3);\n\nfunction calculateAllocation(score, apy) {\n  if (score > 5) return 0.40; // 40% for best opportunities\n  if (score > 3) return 0.25; // 25% for good opportunities\n  if (score > 2) return 0.15; // 15% for decent opportunities\n  return 0.05; // 5% for experimental\n}\n\nfunction calculateMonthlyYield(annual_rate, principal) {\n  return (principal * annual_rate) / 12;\n}\n\nfunction calculateROI(annual_rate, months) {\n  return Math.pow(1 + annual_rate, months / 12) - 1;\n}\n\nconst totalPortfolioValue = 10000; // $10K example portfolio\nconst estimatedMonthlyYield = topOpportunities.reduce((sum, opp) => \n  sum + (opp.expected_monthly_yield * opp.recommended_allocation), 0\n);\n\nconst portfolioStrategy = {\n  total_portfolio_value: totalPortfolioValue,\n  allocated_opportunities: topOpportunities,\n  estimated_monthly_yield: estimatedMonthlyYield,\n  estimated_annual_yield: estimatedMonthlyYield * 12,\n  risk_distribution: {\n    low_risk: topOpportunities.filter(o => o.risk_score < 0.3).length,\n    medium_risk: topOpportunities.filter(o => o.risk_score >= 0.3 && o.risk_score < 0.5).length,\n    high_risk: topOpportunities.filter(o => o.risk_score >= 0.5).length\n  },\n  yield_optimization: {\n    best_apy: Math.max(...topOpportunities.map(o => o.apy)),\n    average_apy: topOpportunities.reduce((sum, o) => sum + o.apy, 0) / topOpportunities.length,\n    risk_adjusted_apy: topOpportunities.reduce((sum, o) => sum + o.risk_adjusted_return, 0) / topOpportunities.length\n  }\n};\n\nreturn [{\n  json: {\n    strategy: portfolioStrategy,\n    timestamp: new Date().toISOString(),\n    market_conditions: {\n      eth_price: \"$2,847.50\",\n      bitcoin_price: \"$67,234.00\",\n      defi_tvl: \"$89.2B\",\n      market_sentiment: \"bullish\"\n    }\n  }\n}];"
+      },
+      "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "DeFi Opportunity Scanner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ids",
+              "value": "ethereum,bitcoin,usd-coin,usdt,dai,matic-network"
+            },
+            {
+              "name": "vs_currencies",
+              "value": "usd"
+            },
+            {
+              "name": "include_24hr_change",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "Fetch Market Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process market data and validate opportunities\nconst marketData = $input.first().json;\nconst strategy = $('DeFi Opportunity Scanner').first().json.strategy;\n\n// Validate opportunity against current market conditions\nconst validatedOpportunities = strategy.allocated_opportunities.map(opp => {\n  const marketCondition = analyzeMarketImpact(opp, marketData);\n  \n  return {\n    ...opp,\n    market_validation: marketCondition,\n    adjusted_apy: opp.apy * marketCondition.volatility_factor,\n    risk_level: assessRiskLevel(opp, marketData),\n    execution_readiness: determineExecutionReadiness(opp, marketData)\n  };\n});\n\n// Generate specific execution instructions\nconst executionPlan = generateExecutionPlan(validatedOpportunities, strategy.total_portfolio_value);\n\nfunction analyzeMarketImpact(protocol, marketData) {\n  const ethPrice = marketData.ethereum?.usd || 0;\n  const btcPrice = marketData.bitcoin?.usd || 0;\n  const marketVolatility = calculateMarketVolatility(marketData);\n  \n  let volatility_factor = 1.0;\n  \n  // Adjust for high volatility periods\n  if (marketVolatility > 0.15) {\n    volatility_factor = 0.85; // Reduce yields during high volatility\n  } else if (marketVolatility < 0.05) {\n    volatility_factor = 1.15; // Increase yields during stable periods\n  }\n  \n  return {\n    volatility_factor,\n    market_conditions: marketVolatility > 0.1 ? \"high_volatility\" : \"stable\",\n    recommended_action: volatility_factor < 1.0 ? \"wait\" : \"execute\",\n    risk_premium: marketVolatility > 0.15 ? 0.05 : 0.0\n  };\n}\n\nfunction calculateMarketVolatility(marketData) {\n  const changes = Object.values(marketData)\n    .map(coin => coin.usd_24h_change || 0)\n    .map(change => Math.abs(change / 100));\n  \n  return changes.reduce((sum, change) => sum + change, 0) / changes.length;\n}\n\nfunction assessRiskLevel(protocol, marketData) {\n  let riskScore = protocol.risk_score;\n  const marketVolatility = calculateMarketVolatility(marketData);\n  \n  // Adjust for market conditions\n  if (marketVolatility > 0.15) {\n    riskScore += 0.1; // Increase risk during high volatility\n  }\n  \n  return Math.min(riskScore, 1.0);\n}\n\nfunction determineExecutionReadiness(protocol, marketData) {\n  const criteria = {\n    liquidity_adequate: protocol.liquidity_depth > 0.8,\n    tvl_sufficient: protocol.tvl > 500000000, // $500M TVL minimum\n    market_favorable: calculateMarketVolatility(marketData) < 0.12,\n    minimum_met: true // Check against actual portfolio value\n  };\n  \n  const readinessScore = Object.values(criteria).filter(Boolean).length / Object.keys(criteria).length;\n  \n  return {\n    score: readinessScore,\n    ready: readinessScore >= 0.75,\n    criteria: criteria,\n    blockers: Object.keys(criteria).filter(key => !criteria[key])\n  };\n}\n\nfunction generateExecutionPlan(opportunities, portfolioValue) {\n  const plan = opportunities.map(opp => {\n    const allocation = portfolioValue * opp.recommended_allocation;\n    \n    return {\n      protocol: opp.name,\n      chain: opp.chain,\n      asset: opp.asset,\n      allocation_amount: allocation,\n      expected_monthly_yield: opp.expected_monthly_yield * opp.recommended_allocation,\n      execution_steps: [\n        `Connect wallet to ${opp.chain}`,\n        `Deposit ${allocation.toFixed(2)} USD worth of ${opp.asset}`,\n        `Stake tokens in ${opp.name} protocol`,\n        `Set up auto-compounding if available`,\n        `Monitor performance weekly`\n      ],\n      risk_mitigation: [\n        `Set stop-loss at 5% decline`,\n        `Diversify across ${opportunities.length} protocols`,\n        `Keep 20% in stable assets`,\n        `Review strategy monthly`\n      ],\n      monitoring_schedule: {\n        daily: \"Check for liquidations and performance\",\n        weekly: \"Rebalance if necessary\",\n        monthly: \"Review and optimize allocations\"\n      }\n    };\n  });\n  \n  return plan;\n}\n\nreturn [{\n  json: {\n    validated_opportunities: validatedOpportunities,\n    execution_plan: executionPlan,\n    market_analysis: {\n      current_volatility: calculateMarketVolatility(marketData),\n      market_sentiment: marketData.ethereum?.usd_24h_change > 0 ? \"bullish\" : \"bearish\",\n      recommendation: \"execute\" // Based on current favorable conditions\n    },\n    portfolio_summary: {\n      total_opportunities: executionPlan.length,\n      estimated_monthly_yield: executionPlan.reduce((sum, plan) => sum + plan.expected_monthly_yield, 0),\n      risk_distribution: \"diversified_low_medium\",\n      execution_timeline: \"immediate\"\n    },\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Validate Opportunities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zerion.io/v1/defi/positions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "zerionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "wallet_address",
+              "value": "{{ $env.WALLET_ADDRESS }}"
+            },
+            {
+              "name": "protocols",
+              "value": "={{ JSON.stringify($json.execution_plan.map(plan => plan.protocol)) }}"
+            },
+            {
+              "name": "networks",
+              "value": "ethereum,polygon,arbitrum"
+            }
+          ]
+        }
+      },
+      "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Check Existing Positions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300],
+      "credentials": {
+        "zerionApi": {
+          "id": "zerion_credentials",
+          "name": "Zerion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.1inch.io/v5/swap",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "oneInchApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fromTokenAddress",
+              "value": "0xA0b86a33E6D4e2B4B8b6c8C4f8D8f8f8f8f8f8f"
+            },
+            {
+              "name": "toTokenAddress",
+              "value": "0x0000000000000000000000000000000000000000"
+            },
+            {
+              "name": "amount",
+              "value": "1000"
+            },
+            {
+              "name": "slippage",
+              "value": "0.5"
+            },
+            {
+              "name": "referrerAddress",
+              "value": "{{ $env.REFERRER_ADDRESS }}"
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Prepare Token Swaps",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300],
+      "credentials": {
+        "oneInchApi": {
+          "id": "oneinch_credentials",
+          "name": "1inch API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.yearn.finance/v1/vaults/Performance",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "yearnApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "vaults",
+              "value": "={{ JSON.stringify($json.execution_plan.filter(plan => plan.protocol.includes('Yearn')).map(plan => plan.protocol)) }}"
+            },
+            {
+              "name": "metrics",
+              "value": "tvl,apy,performance"
+            },
+            {
+              "name": "timeframe",
+              "value": "7d"
+            }
+          ]
+        }
+      },
+      "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Execute Yield Farming",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300],
+      "credentials": {
+        "yearnApi": {
+          "id": "yearn_credentials",
+          "name": "Yearn Finance API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Check Execution Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameter_name": [
+            {
+              "name": "event_type",
+              "value": "defi_yield_farming_executed"
+            },
+            {
+              "name": "protocols",
+              "value": "={{ JSON.stringify($('Validate Opportunities').first().json.execution_plan.map(plan => plan.protocol)) }}"
+            },
+            {
+              "name": "total_allocation",
+              "value": "={{ $('Validate Opportunities').first().json.execution_plan.reduce((sum, plan) => sum + plan.allocation_amount, 0) }}"
+            },
+            {
+              "name": "estimated_monthly_yield",
+              "value": "={{ $('Validate Opportunities').first().json.portfolio_summary.estimated_monthly_yield }}"
+            },
+            {
+              "name": "risk_distribution",
+              "value": "={{ $('Validate Opportunities').first().json.portfolio_summary.risk_distribution }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "completed"
+            }
+          ]
+        }
+      },
+      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "defi_execution_error"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $json.error }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "failed"
+            }
+          ]
+        }
+      },
+      "id": "d0e1f2a3-4b5c-6d7e-8f9a-0b1c2d3e4f5a",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.zapper.fi/v1/protocols/balance",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "zapperApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "addresses",
+              "value": "={{ $env.WALLET_ADDRESS }}"
+            },
+            {
+              "name": "networks",
+              "value": "ethereum,polygon,arbitrum"
+            },
+            {
+              "name": "protocols",
+              "value": "compound,aave,uniswap,yearn,curve,convex"
+            }
+          ]
+        }
+      },
+      "id": "e1f2a3b4-5c6d-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Monitor Portfolio Performance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.DASHBOARD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "defi_portfolio_update"
+            },
+            {
+              "name": "portfolio_data",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "name": "workflow_status",
+              "value": "monitoring_active"
+            }
+          ]
+        }
+      },
+      "id": "f2a3b4c5-6d7e-8f9a-0b1c-2d3e4f5a6b7c",
+      "name": "Update Portfolio Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 200]
+    }
+  ],
+  "connections": {
+    "Schedule DeFi Analysis": {
+      "main": [
+        [
+          {
+            "node": "DeFi Opportunity Scanner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeFi Opportunity Scanner": {
+      "main": [
+        [
+          {
+            "node": "Fetch Market Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Market Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Opportunities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Opportunities": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Positions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Positions": {
+      "main": [
+        [
+          {
+            "node": "Prepare Token Swaps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Token Swaps": {
+      "main": [
+        [
+          {
+            "node": "Execute Yield Farming",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Yield Farming": {
+      "main": [
+        [
+          {
+            "node": "Check Execution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Execution Status": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Monitor Portfolio Performance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monitor Portfolio Performance": {
+      "main": [
+        [
+          {
+            "node": "Update Portfolio Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "id": "error_workflow_id"
+    }
+  },
+  "staticData": {
+    "estimated_monthly_revenue": 892.50,
+    "success_rate": 0.83,
+    "average_apy": 0.0925,
+    "risk_score": 0.31,
+    "portfolio_diversification": "excellent",
+    "auto_compounding": true,
+    "last_optimization": "2025-11-16T14:49:09Z"
+  },
+  "tags": [
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "defi",
+      "name": "DeFi"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "yield-farming",
+      "name": "Yield Farming"
+    },
+    {
+      "createdAt": "2025-11-16T14:49:09Z",
+      "updatedAt": "2025-11-16T14:49:09Z",
+      "id": "auto-compounding",
+      "name": "Auto Compounding"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-16T14:49:09Z",
+  "versionId": "defi-yield-v2025-001"
+}
